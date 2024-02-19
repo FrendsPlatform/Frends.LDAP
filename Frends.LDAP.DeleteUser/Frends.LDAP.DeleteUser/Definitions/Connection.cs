@@ -26,6 +26,11 @@ public class Connection
     public bool SecureSocketLayer { get; set; }
 
     /// <summary>
+    /// Ignore server certificates
+    /// </summary>
+    public bool IgnoreCertificates { get; set; }
+
+    /// <summary>
     /// Connection is protected by TLS.
     /// </summary>
     /// <example>true</example>

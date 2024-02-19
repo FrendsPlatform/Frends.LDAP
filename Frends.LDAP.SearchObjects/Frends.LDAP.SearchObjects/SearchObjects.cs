@@ -4,6 +4,7 @@ using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Frends.LDAP.SearchObjects;
 
@@ -25,7 +26,14 @@ public class LDAP
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("Connection parameters missing.");
 
-        var conn = new LdapConnection();
+       
+        LdapConnectionOptions ldco = new LdapConnectionOptions();
+
+        if (connection.IgnoreCertificates) {
+            ldco.ConfigureRemoteCertificateValidationCallback((sender, certificate, chain, errors) => true);
+        }
+            
+        LdapConnection conn = new LdapConnection(ldco);
         var defaultPort = connection.SecureSocketLayer ? 636 : 389;
         var atr = new List<string>();
         var searchResults = new List<SearchResult>();
