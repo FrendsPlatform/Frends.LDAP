@@ -21,7 +21,13 @@ public class LDAP
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("Connection parameters missing.");
 
-        LdapConnection conn = new();
+        LdapConnectionOptions ldco = new LdapConnectionOptions();
+
+        if (connection.IgnoreCertificates) {
+            ldco.ConfigureRemoteCertificateValidationCallback((sender, certificate, chain, errors) => true);
+        }
+            
+        LdapConnection conn = new LdapConnection(ldco);
 
         try
         {

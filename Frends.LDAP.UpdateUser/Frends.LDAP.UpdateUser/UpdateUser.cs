@@ -36,7 +36,13 @@ public class LDAP
         if (input.Attributes.Length == 0)
             throw new Exception("UpdateUser error: Attributes missing.");
 
-        LdapConnection conn = new();
+        LdapConnectionOptions ldco = new LdapConnectionOptions();
+
+        if (connection.IgnoreCertificates) {
+            ldco.ConfigureRemoteCertificateValidationCallback((sender, certificate, chain, errors) => true);
+        }
+            
+        LdapConnection conn = new LdapConnection(ldco);
 
         try
         {
