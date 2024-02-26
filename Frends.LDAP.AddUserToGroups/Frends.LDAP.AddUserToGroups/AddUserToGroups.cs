@@ -42,7 +42,7 @@ public class LDAP
         }
         catch (LdapException ex)
         {
-            if (ex.Message.Equals("Attribute Or Value Exists") && input.UserExistsAction.Equals(UserExistsAction.Skip)) 
+            if (ex.Message.Equals("Entry Already Exists") && input.UserExistsAction.Equals(UserExistsAction.Skip)) 
                 return new Result(false, ex.Message, input.UserDistinguishedName, input.GroupDistinguishedName);
             else
                 throw new Exception($"AddUserToGroups LDAP error: {ex.Message}");
