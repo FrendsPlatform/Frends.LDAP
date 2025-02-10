@@ -1,6 +1,7 @@
 ﻿using Frends.LDAP.SearchObjects.Definitions;
 using System.ComponentModel;
 using Novell.Directory.Ldap;
+using Novell.Directory.Ldap.Controls;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -23,65 +24,52 @@ public class LDAP
     public static Result SearchObjects([PropertyTab] Input input, [PropertyTab] Connection connection, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("Connection parameters missing.");
+            throw new ArgumentException("Connection parameters missing.");
 
-        var conn = new LdapConnection();
         var defaultPort = connection.SecureSocketLayer ? 636 : 389;
         var atr = new List<string>();
         var searchResults = new List<SearchResult>();
+
         var searchConstraints = new LdapSearchConstraints(
-                input.MsLimit, 
-                input.ServerTimeLimit, 
-                SetSearchDereference(input), 
-                input.MaxResults,
-                false,
-                input.BatchSize,
-                null,
-                0);
-        
-        if(input.Attributes != null)
+            input.MsLimit,
+            input.ServerTimeLimit,
+            SetSearchDereference(input),
+            input.MaxResults,
+            false,
+            input.BatchSize,
+            null,
+            0);
+
+        if (input.Attributes != null)
             foreach (var i in input.Attributes)
                 atr.Add(i.Key.ToString());
 
         try
         {
+            using var conn = new LdapConnection();
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
             if (connection.TLS) conn.StartTls();
             conn.Bind(connection.User, connection.Password);
+            byte[] cookie = null;
 
-            LdapSearchQueue queue = conn.Search(
-                input.SearchBase, 
-                SetScope(input), 
-                input.Filter,
-                atr.ToArray(), 
-                input.TypesOnly, 
-                null, 
-                searchConstraints);
-
-            LdapMessage message;
-            while ((message = queue.GetResponse()) != null)
+            do
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var pagedResultsControl = new SimplePagedResultsControl(input.PageSize, cookie);
+                searchConstraints.SetControls(pagedResultsControl);
 
-                if (message is LdapSearchResult ldapSearchResult)
-                {
-                    var entry = ldapSearchResult.Entry;
-                    var attributeList = new List<AttributeSet>();
-                    var getAttributeSet = entry.GetAttributeSet();
-                    var ienum = getAttributeSet.GetEnumerator();
+                var queue = conn.Search(
+                    input.SearchBase,
+                    SetScope(input),
+                    input.Filter,
+                    atr.ToArray(),
+                    input.TypesOnly,
+                    null,
+                    searchConstraints);
 
-                    while (ienum.MoveNext())
-                    {
-                        LdapAttribute attribute = ienum.Current;
-                        var attributeName = attribute.Name;
-                        var attributeVal = attribute.StringValue;
-                        attributeList.Add(new AttributeSet { Key = attributeName, Value = attributeVal });
-                    }
+                ProcessSearchResults(queue, searchResults, cancellationToken, ref cookie);
+            } while (cookie != null && cookie.Length > 0);
 
-                    searchResults.Add(new SearchResult() { DistinguishedName = entry.Dn, AttributeSet = attributeList });
-                }
-            }
             return new Result(true, null, searchResults);
         }
         catch (LdapException ex)
@@ -92,10 +80,41 @@ public class LDAP
         {
             throw new Exception($"SearchObjects error: {ex}");
         }
-        finally
+    }
+
+    private static void ProcessSearchResults(LdapSearchQueue queue, List<SearchResult> searchResults, CancellationToken cancellationToken, ref byte[] cookie)
+    {
+        LdapMessage message;
+        while ((message = queue.GetResponse()) != null)
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (message is LdapSearchResult ldapSearchResult)
+            {
+                var entry = ldapSearchResult.Entry;
+                var attributeList = new List<AttributeSet>();
+
+                foreach (LdapAttribute attribute in entry.GetAttributeSet())
+                {
+                    attributeList.Add(new AttributeSet { Key = attribute.Name, Value = attribute.StringValue });
+                }
+
+                searchResults.Add(new SearchResult { DistinguishedName = entry.Dn, AttributeSet = attributeList });
+            }
+            else if (message is LdapResponse ldapResponse)
+            {
+                var controls = ldapResponse.Controls;
+                if (controls != null)
+                {
+                    foreach (var control in controls)
+                    {
+                        if (control is SimplePagedResultsControl pagedResultsResponse)
+                        {
+                            cookie = pagedResultsResponse.Cookie;
+                        }
+                    }
+                }
+            }
         }
     }
 

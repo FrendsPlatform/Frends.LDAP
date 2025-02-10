@@ -433,6 +433,7 @@ public class UnitTests
             SearchDereference = SearchDereference.DerefNever,
             MaxResults = default,
             BatchSize = default,
+            PageSize = 500,
             TypesOnly = default,
             Attributes = null,
         };

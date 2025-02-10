@@ -62,7 +62,12 @@ public class Input
     /// <example>1</example>
     [DefaultValue(1)]
     public int BatchSize { get; set; }
-
+    /// <summary>
+    /// Specifies how large the page should be for paged results.
+    /// </summary>
+    /// <example>1</example>
+    [DefaultValue(500)]
+    public int PageSize { get; set; }
     /// <summary>
     /// If true, returns the names but not the values of the attributes found. 
     /// If false, returns the names and values for attributes found.
