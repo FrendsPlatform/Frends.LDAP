@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System.Text;
 
 namespace Frends.LDAP.SearchObjects;
 
@@ -34,6 +35,8 @@ public class LDAP
 
         LdapConnectionOptions ldco = new LdapConnectionOptions();
 
+        var encoding = GetEncoding(input.ContentEncoding, input.ContentEncodingString, input.EnableBom);
+
         if (connection.IgnoreCertificates)
             ldco.ConfigureRemoteCertificateValidationCallback((sender, certificate, chain, errors) => true);
 
@@ -51,7 +54,7 @@ public class LDAP
                 null,
                 0);
 
-        if (input.Attributes != null)
+        if (input.Attributes != null && input.SearchOnlySpecifiedAttributes)
             foreach (var i in input.Attributes)
                 atr.Add(i.Key.ToString());
 
@@ -93,8 +96,6 @@ public class LDAP
             LdapMessage message;
             while ((message = queue.GetResponse()) != null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 if (message is LdapSearchResult ldapSearchResult)
                 {
                     var entry = ldapSearchResult.Entry;
@@ -104,10 +105,58 @@ public class LDAP
 
                     while (ienum.MoveNext())
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         LdapAttribute attribute = ienum.Current;
                         var attributeName = attribute.Name;
+                        dynamic attributeVal = null;
+                        var byteValues = attribute.ByteValues;
 
-                        dynamic attributeVal = attribute.StringValueArray.Length <= 1 ? attribute.StringValue : attribute.StringValueArray;
+                        var test = attribute.StringValueArray;
+                        var test1 = attribute.StringValue;
+                        var values = new List<byte[]>();
+                        while (byteValues.MoveNext())
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            values.Add(byteValues.Current);
+                        }
+
+                        if (input.Attributes != null && input.Attributes.Any(x => x.Key == attributeName))
+                        {
+                            var inputAttribute = input.Attributes.FirstOrDefault(x => x.Key == attributeName);
+
+                            if (inputAttribute.ReturnAsByteArray)
+                            {
+                                if (values.Any())
+                                    attributeVal = values.Count > 1 ? values : values[0];
+                            }
+                            else
+                            {
+                                if (values.Count == 1)
+                                {
+                                    attributeVal = encoding.GetString(values[0]);
+                                }
+                                else if (values.Count > 1)
+                                {
+                                    attributeVal = new List<string>();
+                                    foreach (var byteValue in values)
+                                        ((List<string>)attributeVal).Add(encoding.GetString(byteValue));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (values.Count == 1)
+                            {
+                                attributeVal = encoding.GetString(values[0]);
+                            }
+                            else if (values.Count > 1)
+                            {
+                                attributeVal = new List<string>();
+                                foreach (var byteValue in values)
+                                    ((List<string>)attributeVal).Add(encoding.GetString(byteValue));
+                            }
+                        }
+
                         attributeList.Add(new AttributeSet { Key = attributeName, Value = attributeVal });
                     }
 
@@ -153,6 +202,19 @@ public class LDAP
             SearchDereference.DerefFinding => 2,
             SearchDereference.DerefAlways => 3,
             _ => throw new Exception("SetSearchConstraint error: Invalid search constraint."),
+        };
+    }
+
+    internal static Encoding GetEncoding(ContentEncoding encoding, string encodingString, bool enableBom)
+    {
+        return encoding switch
+        {
+            ContentEncoding.UTF8 => enableBom ? new UTF8Encoding(true) : new UTF8Encoding(false),
+            ContentEncoding.ASCII => new ASCIIEncoding(),
+            ContentEncoding.Default => Encoding.Default,
+            ContentEncoding.WINDOWS1252 => CodePagesEncodingProvider.Instance.GetEncoding("windows-1252"),
+            ContentEncoding.Other => CodePagesEncodingProvider.Instance.GetEncoding(encodingString),
+            _ => throw new ArgumentOutOfRangeException($"Unknown Encoding type: '{encoding}'."),
         };
     }
 }

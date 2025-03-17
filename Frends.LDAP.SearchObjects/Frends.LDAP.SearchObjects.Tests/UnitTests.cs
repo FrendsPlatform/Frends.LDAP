@@ -18,6 +18,7 @@ public class UnitTests
     private readonly string? _pw = "secret";
     private readonly string _path = "ou=users,dc=wimpi,dc=net";
     private readonly List<string> _cns = new() { "Tes Tuser", "Qwe Rty", "Foo Bar" };
+    private readonly byte[] _photo = File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestData/test.png"));
 
     Input? input;
     Connection? connection;
@@ -40,9 +41,7 @@ public class UnitTests
         {
             CreateTestUsers();
         }
-        catch (Exception)
-        {
-        }
+        catch { }
     }
 
     [TestMethod]
@@ -60,6 +59,8 @@ public class UnitTests
             BatchSize = default,
             TypesOnly = default,
             Attributes = null,
+            ContentEncoding = ContentEncoding.UTF8,
+            EnableBom = false,
         };
 
         var result = LDAP.SearchObjects(input, connection, default);
@@ -393,7 +394,8 @@ public class UnitTests
     {
         var atr = new List<Attributes>
         {
-            new Attributes() { Key = "cn" }
+            new Attributes() { Key = "photo", ReturnAsByteArray = true },
+            new Attributes() { Key = "cn", ReturnAsByteArray = false }
         };
 
         input = new()
@@ -407,6 +409,7 @@ public class UnitTests
             MaxResults = default,
             BatchSize = default,
             TypesOnly = default,
+            SearchOnlySpecifiedAttributes = true,
             Attributes = atr.ToArray(),
         };
 
@@ -416,6 +419,11 @@ public class UnitTests
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
             x.AttributeSet.Any(y => y.Key.Equals("cn")))
         );
+        Assert.IsTrue(result.SearchResult.Any(x =>
+            x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
+            x.AttributeSet.Any(y => y.Key.Equals("photo")))
+        );
+        Assert.AreEqual(Convert.ToBase64String(result.SearchResult.First(x => x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net")).AttributeSet.First(x => x.Key.Equals("photo")).Value), Convert.ToBase64String(_photo));
 
         Assert.IsFalse(result.SearchResult.Any(x =>
             x.AttributeSet.Any(y => y.Key.Equals("sn")) ||
@@ -448,6 +456,7 @@ public class UnitTests
             attributeSet.Add(new LdapAttribute("givenname", i[..2]));
             attributeSet.Add(new LdapAttribute("sn", i[4..]));
             attributeSet.Add(new LdapAttribute("title", title));
+            attributeSet.Add(new LdapAttribute("photo", _photo));
 
             var entry = $"CN={i},{_path}";
             LdapEntry newEntry = new(entry, attributeSet);

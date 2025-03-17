@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Frends.LDAP.SearchObjects.Definitions;
 
@@ -72,6 +73,33 @@ public class Input
     public bool TypesOnly { get; set; }
 
     /// <summary>
+    /// Specifies the encoding of the content.
+    /// </summary>
+    /// <example>ContentEncoding.UTF8</example>
+    public ContentEncoding ContentEncoding { get; set; }
+
+    /// <summary>
+    /// Enable BOM in UTF-8 encoding.
+    /// </summary>
+    /// <example>true</example>
+    [UIHint(nameof(ContentEncoding), "", ContentEncoding.UTF8)]
+    public bool EnableBom { get; set; }
+
+    /// <summary>
+    /// Content encoding as string.
+    /// </summary>
+    /// <example>windows-1251</example>
+    [UIHint(nameof(ContentEncoding), "", ContentEncoding.Other)]
+    public string ContentEncodingString { get; set; }
+
+    /// <summary>
+    /// Determine if only specified attributes should be returned.
+    /// This allows user to specify encoding and type for certain attributes.
+    /// </summary>
+    [DefaultValue(true)]
+    public bool SearchOnlySpecifiedAttributes { get; set; }
+
+    /// <summary>
     /// The names of attributes to retrieve.
     /// </summary>
     /// <example>cn</example>
@@ -84,8 +112,15 @@ public class Input
 public class Attributes
 {
     /// <summary>
-    /// Key.
+    /// Key of the attribute.
     /// </summary>
     /// <example>title</example>
     public string Key { get; set; }
+
+    /// <summary>
+    /// Enables the return value to be returned as a byte array.
+    /// </summary>
+    /// <example>true</example>
+    [DefaultValue(false)]
+    public bool ReturnAsByteArray { get; set; }
 }
