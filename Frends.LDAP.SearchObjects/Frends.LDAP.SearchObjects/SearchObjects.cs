@@ -97,7 +97,7 @@ public class LDAP
                     throw new LdapException("LDAP bind failed: connection is not bound.");
                 return new Result(false, $"LdapException: LDAP bind failed: connection is not bound.", null);
             }
-                
+
             do
             {
                 if (input.PageSize > 0)
