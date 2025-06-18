@@ -91,6 +91,13 @@ public class LDAP
 
             byte[] cookie = null;
 
+            if (!conn.Bound)
+            {
+                if (connection.ThrowExceptionOnError)
+                    throw new LdapException("LDAP bind failed: connection is not bound.");
+                return new Result(false, $"LdapException: LDAP bind failed: connection is not bound.", null);
+            }
+                
             do
             {
                 if (input.PageSize > 0)
@@ -150,6 +157,18 @@ public class LDAP
             }
             else if (message is LdapResponse ldapResponse)
             {
+                if (ldapResponse.ResultCode != LdapException.Success &&
+                    ldapResponse.ResultCode != LdapException.SizeLimitExceeded &&
+                    ldapResponse.ResultCode != LdapException.TimeLimitExceeded &&
+                    ldapResponse.ResultCode != LdapException.LdapPartialResults)
+                {
+                    throw new LdapException(
+                        $"LDAP search failed with error: {ldapResponse.ErrorMessage}",
+                        ldapResponse.ResultCode,
+                        ldapResponse.MatchedDn
+                    );
+                }
+
                 var controls = ldapResponse.Controls;
                 if (controls != null)
                 {

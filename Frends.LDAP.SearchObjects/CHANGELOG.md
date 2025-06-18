@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.0] - 2025-06-17
+### Added
+- Improved LDAP error handling by validating bind status and checking search response codes.
+
 ## [4.0.0] - 2025-04-04
 ### Added
 - [Breaking] - Parameter for PageSize to control how many entries are fetched per page during an LDAP search.
