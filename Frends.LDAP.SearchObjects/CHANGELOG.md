@@ -3,6 +3,7 @@
 ## [4.1.0] - 2025-06-17
 ### Added
 - Improved LDAP error handling by validating bind status and checking search response codes.
+- Block negative values for MsLimit
 
 ## [4.0.0] - 2025-04-04
 ### Added

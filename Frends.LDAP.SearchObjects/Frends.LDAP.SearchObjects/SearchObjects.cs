@@ -35,6 +35,9 @@ public class LDAP
         if (string.IsNullOrEmpty(connection.Password) && !connection.AnonymousBind)
             throw new Exception("Password is missing.");
 
+        if (input.MsLimit < 0)
+            throw new ArgumentException("MsLimit must be a non-negative value (0 for no limit).");
+
         LdapConnectionOptions ldco = new LdapConnectionOptions();
 
         var encoding = GetEncoding(input.ContentEncoding, input.ContentEncodingString, input.EnableBom);
