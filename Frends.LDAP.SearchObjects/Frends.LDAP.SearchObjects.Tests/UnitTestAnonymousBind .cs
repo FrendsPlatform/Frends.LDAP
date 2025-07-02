@@ -12,7 +12,7 @@ namespace Frends.LDAP.SearchObjects.Tests;
 public class UnitTestAnonymousBind
 {
     /*
-        Create a simple LDAP server to docker
+        Create a simple LDAP server to docker fo anynomus bind testing.
         docker run --rm -p 20389:389 -e LDAP_ORGANISATION="Test Org" -e LDAP_DOMAIN="example.org" -e LDAP_ADMIN_PASSWORD="admin" osixia/openldap:1.5.0
     */
 
