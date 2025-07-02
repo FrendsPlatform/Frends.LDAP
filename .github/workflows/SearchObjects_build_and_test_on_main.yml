@@ -19,5 +19,10 @@ jobs:
           --env LDAP_ORGANISATION="Test Org" \
           --env LDAP_DOMAIN="example.org" \
           --env LDAP_ADMIN_PASSWORD="admin"
+
+        for i in {1..30}; do
+            nc -z 127.0.0.1 20389 && echo "LDAP ready" && break
+            echo "Waiting for LDAP..." && sleep 1
+        done
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
