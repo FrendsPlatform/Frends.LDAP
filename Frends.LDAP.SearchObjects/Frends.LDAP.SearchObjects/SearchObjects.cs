@@ -35,6 +35,9 @@ public class LDAP
         if (string.IsNullOrEmpty(connection.Password) && !connection.AnonymousBind)
             throw new Exception("Password is missing.");
 
+        if (input.MsLimit < 0)
+            throw new ArgumentException("MsLimit must be a non-negative value (0 for no limit).");
+
         LdapConnectionOptions ldco = new LdapConnectionOptions();
 
         var encoding = GetEncoding(input.ContentEncoding, input.ContentEncodingString, input.EnableBom);
@@ -90,6 +93,13 @@ public class LDAP
                 conn.Bind(version: ldapVersion, connection.User, connection.Password);
 
             byte[] cookie = null;
+
+            if (!conn.Bound)
+            {
+                if (connection.ThrowExceptionOnError)
+                    throw new LdapException("LDAP bind failed: connection is not bound.");
+                return new Result(false, $"LdapException: LDAP bind failed: connection is not bound.", null);
+            }
 
             do
             {
@@ -150,6 +160,18 @@ public class LDAP
             }
             else if (message is LdapResponse ldapResponse)
             {
+                if (ldapResponse.ResultCode != LdapException.Success &&
+                    ldapResponse.ResultCode != LdapException.SizeLimitExceeded &&
+                    ldapResponse.ResultCode != LdapException.TimeLimitExceeded &&
+                    ldapResponse.ResultCode != LdapException.LdapPartialResults)
+                {
+                    throw new LdapException(
+                        $"LDAP search failed with error: {ldapResponse.ErrorMessage}",
+                        ldapResponse.ResultCode,
+                        ldapResponse.MatchedDn
+                    );
+                }
+
                 var controls = ldapResponse.Controls;
                 if (controls != null)
                 {

@@ -13,6 +13,24 @@ jobs:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_main.yml@main
     with:
       workdir: Frends.LDAP.SearchObjects
-      prebuild_command: docker run -d -i --rm -p 10389:10389 dwimberger/ldap-ad-it
+      prebuild_command: |
+        docker run -d -i --rm --name ldap1 -p 10389:10389 dwimberger/ldap-ad-it
+        docker run -d -i --rm --name ldap2 -p 20389:389 \
+          -e LDAP_ORGANISATION="Test Org" \
+          -e LDAP_DOMAIN="example.org" \
+          -e LDAP_ADMIN_PASSWORD="admin" \
+          osixia/openldap:1.5.0
+
+        echo "Waiting for osixia LDAP to be ready..."
+        for i in {1..30}; do
+        if docker logs ldap2 2>&1 | grep -q "slapd starting"; then
+            echo "osixia LDAP is ready."
+            break
+        fi
+        echo "Still waiting for osixia LDAP ($i)..."
+        sleep 1
+        done
+
+        echo "Prebuild finished."
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
