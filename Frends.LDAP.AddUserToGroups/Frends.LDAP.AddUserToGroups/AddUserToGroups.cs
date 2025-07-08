@@ -43,7 +43,7 @@ public class LDAP
 
             if (UserExistsInGroup(conn, input.UserDistinguishedName, input.GroupDistinguishedName, cancellationToken) && input.UserExistsAction.Equals(UserExistsAction.Skip))
                 return new Result(false, "AddUserToGroups LDAP error: User already exists in the group.", input.UserDistinguishedName, input.GroupDistinguishedName);
-
+            
             conn.Modify(input.GroupDistinguishedName, mods);
 
             return new Result(true, null, input.UserDistinguishedName, input.GroupDistinguishedName);
@@ -62,7 +62,7 @@ public class LDAP
             conn.Disconnect();
         }
     }
-
+   
     private static bool UserExistsInGroup(LdapConnection connection, string userDn, string groupDn, CancellationToken cancellationToken)
     {
         // Search for the user's groups
@@ -90,12 +90,17 @@ public class LDAP
             if (entry != null)
             {
                 LdapAttribute memberAttr = entry.GetAttribute("member");
-                var currentMembers = memberAttr.StringValueArray;
-                if (currentMembers.Where(e => e == userDn).Any())
+                //Check that the attribute exists, otherwise an error will be thrown if the group is empty.
+                if(memberAttr != null)
+                {
+                    var currentMembers = memberAttr.StringValueArray;
+                    if (currentMembers.Where(e => e == userDn).Any())
                     return true;
+                }
+                return false;
             }
         }
-
+        
         return false;
     }
 }
