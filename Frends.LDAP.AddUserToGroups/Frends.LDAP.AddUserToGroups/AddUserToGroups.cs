@@ -4,6 +4,7 @@ using Novell.Directory.Ldap;
 using System;
 using System.Threading;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Frends.LDAP.AddUserToGroups;
 
@@ -89,7 +90,17 @@ public class LDAP
 
             if (entry != null)
             {
-                LdapAttribute memberAttr = entry.GetAttribute("member");
+                LdapAttribute memberAttr;
+
+                try
+                {
+                    memberAttr = entry.GetAttribute("member");
+                }
+                catch (KeyNotFoundException)
+                {
+                    continue;
+                }
+
                 var currentMembers = memberAttr.StringValueArray;
                 if (currentMembers.Where(e => e == userDn).Any())
                     return true;
