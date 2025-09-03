@@ -48,6 +48,35 @@ public class UnitTests
     }
 
     [TestMethod]
+    public void UnicodedPassword_Test()
+    {
+        input = new()
+        {
+            Path = "CN=qw,DC=er,DC=ty",
+            CommonName = "FAil" + new Guid(),
+            ObjectClass = "inetOrgPerson",
+            GivenName = "Ail",
+            Surname = "F",
+            SetPassword = true,
+            PasswordIsUnicoded = true,
+            Password = "Qwerty123!",
+        };
+        connection = new()
+        {
+            Host = _host,
+            User = _user,
+            Password = _pw,
+            SecureSocketLayer = false,
+            Port = _port,
+            TLS = false,
+        };
+
+        var result = LDAP.CreateUser(input, connection);
+        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Attribute"));
+
+    }
+
+    [TestMethod]
     public void CreateUser_Test()
     {
         input = new()
@@ -75,7 +104,7 @@ public class UnitTests
         DeleteUser(input.CommonName, input.Path);
     }
 
-    public void DeleteUser(string cn, string path) 
+    public void DeleteUser(string cn, string path)
     {
         LdapConnection ldapConn = new();
         ldapConn.Connect(_host, _port);

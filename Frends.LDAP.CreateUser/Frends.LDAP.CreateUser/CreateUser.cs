@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using Novell.Directory.Ldap;
 using System;
+using System.Text;
+
 namespace Frends.LDAP.CreateUser;
 
 /// <summary>
@@ -30,7 +32,9 @@ public class LDAP
 
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
-            if (connection.TLS) conn.StartTls();
+            if (connection.TLS)
+                throw new Exception("Active Directory password changes require SSL. TLS is not supported for unicodePwd.");
+
             conn.Bind(connection.User, connection.Password);
 
             LdapAttributeSet attributeSet = new();
@@ -39,7 +43,21 @@ public class LDAP
             if (!string.IsNullOrWhiteSpace(input.GivenName)) attributeSet.Add(new LdapAttribute("givenname", input.GivenName));
             if (!string.IsNullOrWhiteSpace(input.Surname)) attributeSet.Add(new LdapAttribute("sn", input.Surname));
             if (!string.IsNullOrWhiteSpace(input.Email)) attributeSet.Add(new LdapAttribute("mail", input.Email.ToLower()));
-            if (input.SetPassword) attributeSet.Add(new LdapAttribute("userpassword", input.Password));
+
+            if (input.SetPassword && !string.IsNullOrWhiteSpace(input.Password))
+            {
+                string quotedPassword = $"\"{input.Password}\"";
+
+                if (input.PasswordIsUnicoded)
+                {
+                    byte[] passwordBytes = Encoding.Unicode.GetBytes(quotedPassword);
+                    attributeSet.Add(new LdapAttribute("unicodePwd", passwordBytes));
+                }
+                else
+                {
+                    attributeSet.Add(new LdapAttribute("userpassword", input.Password));
+                }
+            }
 
             // Manually set LdapAttributes.
             if (input.Attributes.Length != 0)
@@ -64,3 +82,10 @@ public class LDAP
         }
     }
 }
+
+
+
+
+
+
+

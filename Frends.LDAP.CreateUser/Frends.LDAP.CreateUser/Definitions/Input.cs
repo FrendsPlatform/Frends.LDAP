@@ -51,6 +51,13 @@ public class Input
     public bool SetPassword { get; set; }
 
     /// <summary>
+    /// Password is unicoded to new user.
+    /// </summary>
+    /// <example>true</example>
+    [DefaultValue(false)]
+    public bool PasswordIsUnicoded { get; set; }
+
+    /// <summary>
     /// Password.
     /// </summary>
     /// <example>Password123</example>
