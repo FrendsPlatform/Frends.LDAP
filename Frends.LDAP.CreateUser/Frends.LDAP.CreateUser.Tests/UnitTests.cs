@@ -58,7 +58,7 @@ public class UnitTests
             GivenName = "Ail",
             Surname = "F",
             SetPassword = true,
-            PasswordIsUnicoded = true,
+            SetPasswordInUnicode = true,
             Password = "Qwerty123!",
         };
         connection = new()
@@ -72,8 +72,8 @@ public class UnitTests
         };
 
         var result = LDAP.CreateUser(input, connection);
-        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Attribute"));
-
+        Assert.IsTrue(result.Error.Contains("No Such Attribute"));
+        Assert.IsFalse(result.Success);
     }
 
     [TestMethod]

@@ -51,11 +51,11 @@ public class Input
     public bool SetPassword { get; set; }
 
     /// <summary>
-    /// Password is unicoded to new user.
+    /// Password can be added to the unicodePwd field as a byte[] type.   
     /// </summary>
     /// <example>true</example>
     [DefaultValue(false)]
-    public bool PasswordIsUnicoded { get; set; }
+    public bool SetPasswordInUnicode { get; set; }
 
     /// <summary>
     /// Password.

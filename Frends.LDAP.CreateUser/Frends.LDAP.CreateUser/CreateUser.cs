@@ -32,9 +32,11 @@ public class LDAP
 
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
-            if (connection.TLS)
+            if (connection.TLS && input.SetPasswordInUnicode)
                 throw new Exception("Active Directory password changes require SSL. TLS is not supported for unicodePwd.");
-
+            else if (connection.TLS) 
+                conn.StartTls();
+          
             conn.Bind(connection.User, connection.Password);
 
             LdapAttributeSet attributeSet = new();
@@ -48,7 +50,7 @@ public class LDAP
             {
                 string quotedPassword = $"\"{input.Password}\"";
 
-                if (input.PasswordIsUnicoded)
+                if (input.SetPasswordInUnicode)
                 {
                     byte[] passwordBytes = Encoding.Unicode.GetBytes(quotedPassword);
                     attributeSet.Add(new LdapAttribute("unicodePwd", passwordBytes));
