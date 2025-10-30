@@ -51,6 +51,14 @@ public class Input
     public bool SetPassword { get; set; }
 
     /// <summary>
+    /// Password can be added to the unicodePwd field as a byte[] type
+    /// Requires connection.SecureSocketLayer or connection.TLS.
+    /// </summary>
+    /// <example>true</example>
+    [DefaultValue(false)]
+    public bool SetPasswordInUnicode { get; set; }
+
+    /// <summary>
     /// Password.
     /// </summary>
     /// <example>Password123</example>
