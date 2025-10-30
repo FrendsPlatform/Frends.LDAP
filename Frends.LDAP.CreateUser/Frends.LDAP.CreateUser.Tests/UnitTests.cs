@@ -71,9 +71,8 @@ public class UnitTests
             TLS = false,
         };
 
-        var result = LDAP.CreateUser(input, connection);
-        Assert.IsTrue(result.Error.Contains("No Such Attribute"));
-        Assert.IsFalse(result.Success);
+        var ex = Assert.ThrowsException<Exception>(() => LDAP.CreateUser(input, connection));
+        StringAssert.Contains(ex.Message, "require SSL or TLS");
     }
 
     [TestMethod]

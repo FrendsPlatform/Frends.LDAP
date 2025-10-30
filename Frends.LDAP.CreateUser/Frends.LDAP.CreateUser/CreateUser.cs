@@ -23,8 +23,8 @@ public class LDAP
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("Connection parameters missing.");
 
-            if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode) 
-                throw new Exception("Active Directory password changes require SSL or TLS or both.");
+        if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
+            throw new Exception("Active Directory password changes require SSL or TLS or both.");
         LdapConnection conn = new();
 
         try
@@ -34,10 +34,10 @@ public class LDAP
 
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
-            
-            if (connection.TLS) 
+
+            if (connection.TLS)
                 conn.StartTls();
-          
+
             conn.Bind(connection.User, connection.Password);
 
             LdapAttributeSet attributeSet = new();
