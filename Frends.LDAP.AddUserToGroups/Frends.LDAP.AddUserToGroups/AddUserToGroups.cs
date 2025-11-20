@@ -51,6 +51,10 @@ public class LDAP
         }
         catch (LdapException ex)
         {
+            if (ex.ResultCode == LdapException.AttributeOrValueExists && input.UserExistsAction == UserExistsAction.Skip)
+            {
+                return new Result(false, "User already exists in the group, skipped as requested.", input.UserDistinguishedName, input.GroupDistinguishedName);
+            }
             throw new Exception($"AddUserToGroups LDAP error: {ex.Message}");
         }
         catch (Exception ex)
