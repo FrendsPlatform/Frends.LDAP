@@ -70,7 +70,8 @@ public class LDAP
 
     private static bool UserExistsInGroup(LdapConnection connection, string userDn, string groupDn, CancellationToken cancellationToken)
     {
-        // Search for the user's groups
+        cancellationToken.ThrowIfCancellationRequested();
+
         ILdapSearchResults searchResults = connection.Search(
             groupDn,
             LdapConnection.ScopeSub,
@@ -78,36 +79,17 @@ public class LDAP
             null,
             false);
 
-        // Check if the user is a member of the specified group
-        while (searchResults.HasMore())
+        if (searchResults.HasMore())
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            LdapEntry entry;
             try
             {
-                entry = searchResults.Next();
+                var entry = searchResults.Next();
+                var memberAttr = entry.GetAttribute("member");
+                return memberAttr.StringValueArray.Contains(userDn, StringComparer.OrdinalIgnoreCase);
             }
-            catch (LdapException)
+            catch (KeyNotFoundException)
             {
-                continue;
-            }
-
-            if (entry != null)
-            {
-                LdapAttribute memberAttr;
-
-                try
-                {
-                    memberAttr = entry.GetAttribute("member");
-                }
-                catch (KeyNotFoundException)
-                {
-                    continue;
-                }
-
-                var currentMembers = memberAttr.StringValueArray;
-                if (currentMembers.Where(e => e == userDn).Any())
-                    return true;
+                return false;
             }
         }
 
