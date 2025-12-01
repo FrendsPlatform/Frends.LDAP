@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2025-11-20
+### Fixed
+- Fixed LDAP exception when adding duplicate users with skip option enabled.
+
 ## [1.1.0] - 2025-08-13
 ### Fixed
 - Fixed KeyNotFoundException when checking empty groups for existing users.
