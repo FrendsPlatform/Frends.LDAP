@@ -22,7 +22,12 @@ public class LDAP
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("RemoveUserFromGroups error: Connection parameters missing.");
 
-        LdapConnection conn = new();
+        LdapConnectionOptions ldco = new LdapConnectionOptions();
+
+        if (connection.IgnoreCertificates)
+            ldco.ConfigureRemoteCertificateValidationCallback((sender, certificate, chain, errors) => true);
+
+        using var conn = new LdapConnection(ldco);
 
         try
         {
