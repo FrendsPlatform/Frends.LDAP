@@ -26,6 +26,9 @@ public class LDAP
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("AddUserToGroups error: Connection parameters missing.");
 
+        if (input?.GroupDistinguishedNames == null || input.GroupDistinguishedNames.Length == 0)
+            throw new Exception("AddUserToGroups error: GroupDistinguishedNames is required.");
+
         using LdapConnection conn = new();
         try
         {

@@ -297,8 +297,21 @@ public class UnitTests
         conn.Connect(_host, _port);
         conn.Bind(_user, _pw);
 
-        conn.Delete(_groupDn);
-        conn.Delete(_groupDn2);
+        try
+        {
+            conn.Delete(_groupDn);
+        }
+        catch (LdapException ex) when (ex.ResultCode == LdapException.NoSuchObject)
+        {
+        }
+
+        try
+        {
+            conn.Delete(_groupDn2);
+        }
+        catch (LdapException ex) when (ex.ResultCode == LdapException.NoSuchObject)
+        {
+        }
 
         conn.Disconnect();
     }
