@@ -36,14 +36,16 @@ public class UnitTests
         };
 
         CreateTestUser(_testUserDn);
-        CreateTestGroups();
+        CreateTestGroups("admin", _groupDn);
+        CreateTestGroups("developers", _groupDn2);
     }
 
     [TearDown]
     public void Teardown()
     {
         DeleteTestUsers(_testUserDn, new[] { _groupDn, _groupDn2 });
-        DeleteTestGroups();
+        DeleteTestGroups(_groupDn);
+        DeleteTestGroups(_groupDn2);
     }
 
     [Test]
@@ -109,7 +111,7 @@ public class UnitTests
         Assert.IsTrue(result.Success);
 
         var ex = Assert.Throws<Exception>(() => LDAP.AddUserToGroups(input, connection, default));
-        Assert.IsTrue(ex.Message.Contains("AddUserToGroups LDAP error: Attribute Or Value Exists"));
+        Assert.IsTrue(ex.Message.Contains("User already exists in the group"));
     }
 
     [Test]
@@ -128,10 +130,9 @@ public class UnitTests
         Assert.IsNull(result.Details);
 
         result = LDAP.AddUserToGroups(input, connection, default);
-        Assert.IsFalse(result.Success);
-        Assert.IsNotNull(result.Error);
-        Assert.IsNull(result.Details);
-        Assert.IsTrue(result.Error.Contains("User already exists in the group"));
+        Assert.IsTrue(result.Success);
+        Assert.IsNotNull(result.Details);
+        Assert.IsTrue(result.Details.Contains("User already exists"));
     }
 
     [Test]
@@ -184,10 +185,9 @@ public class UnitTests
 
         var result = LDAP.AddUserToGroups(input, connection, default);
 
-        Assert.IsFalse(result.Success);
-        Assert.IsNotNull(result.Error);
-        Assert.IsNull(result.Details);
-        Assert.IsTrue(result.Error.Contains("User already exists in all groups"));
+        Assert.IsTrue(result.Success);
+        Assert.IsNotNull(result.Details);
+        Assert.IsTrue(result.Details.Contains("User already exists"));
     }
 
     private bool VerifyUserInGroup(string userDn, string groupDn)
@@ -291,7 +291,7 @@ public class UnitTests
         conn.Disconnect();
     }
 
-    private void DeleteTestGroups()
+    private void DeleteTestGroups(string dn)
     {
         using LdapConnection conn = new();
         conn.Connect(_host, _port);
@@ -299,15 +299,7 @@ public class UnitTests
 
         try
         {
-            conn.Delete(_groupDn);
-        }
-        catch (LdapException ex) when (ex.ResultCode == LdapException.NoSuchObject)
-        {
-        }
-
-        try
-        {
-            conn.Delete(_groupDn2);
+            conn.Delete(dn);
         }
         catch (LdapException ex) when (ex.ResultCode == LdapException.NoSuchObject)
         {
@@ -316,7 +308,7 @@ public class UnitTests
         conn.Disconnect();
     }
 
-    private void CreateTestGroups()
+    private void CreateTestGroups(string cn, string dn)
     {
         using LdapConnection conn = new();
         conn.Connect(_host, _port);
@@ -324,30 +316,14 @@ public class UnitTests
 
         try
         {
-            var adminGroupAttr = new LdapAttributeSet
+            var groupAttr = new LdapAttributeSet
         {
             new LdapAttribute("objectClass", new[] { "top", "groupOfNames" }),
-            new LdapAttribute("cn", "admin"),
+            new LdapAttribute("cn", cn),
             new LdapAttribute("member", "uid=admin,ou=system"),
         };
-            LdapEntry adminGroup = new(_groupDn, adminGroupAttr);
-            conn.Add(adminGroup);
-        }
-        catch (LdapException ex) when (ex.ResultCode == LdapException.EntryAlreadyExists)
-        {
-            // Group already exists, ignore
-        }
-
-        try
-        {
-            var devGroupAttr = new LdapAttributeSet
-        {
-            new LdapAttribute("objectClass", new[] { "top", "groupOfNames" }),
-            new LdapAttribute("cn", "developers"),
-            new LdapAttribute("member", "uid=admin,ou=system"),
-        };
-            LdapEntry devGroup = new(_groupDn2, devGroupAttr);
-            conn.Add(devGroup);
+            LdapEntry group = new(dn, groupAttr);
+            conn.Add(group);
         }
         catch (LdapException ex) when (ex.ResultCode == LdapException.EntryAlreadyExists)
         {

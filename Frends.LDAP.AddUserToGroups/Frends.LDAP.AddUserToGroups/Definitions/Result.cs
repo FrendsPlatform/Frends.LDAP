@@ -30,12 +30,12 @@ public class Result
     public string UserDistinguishedName { get; private set; }
 
     /// <summary>
-    /// Group DN. When multiple groups are involved, they are comma-separated.
+    /// Group DN(s).
     /// </summary>
-    /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
-    public string GroupDistinguishedName { get; private set; }
+    /// <example>new[] { "cn=admin,ou=roles,dc=wimpi,dc=net" }</example>
+    public string[] GroupDistinguishedName { get; private set; }
 
-    internal Result(bool success, string error, string details, string userDistinguishedName, string groupDistinguishedName)
+    internal Result(bool success, string error, string details, string userDistinguishedName, string[] groupDistinguishedName)
     {
         Success = success;
         Error = error;

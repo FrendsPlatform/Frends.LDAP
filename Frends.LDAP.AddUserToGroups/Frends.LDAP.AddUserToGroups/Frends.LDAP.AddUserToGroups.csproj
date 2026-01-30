@@ -16,6 +16,7 @@
   </PropertyGroup>
 	
   <ItemGroup>
+	  <Content Include="migration.json" PackagePath="/" Pack="true" />
 	  <None Include="FrendsTaskMetadata.json" Pack="true" PackagePath="/">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
