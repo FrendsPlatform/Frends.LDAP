@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.0] - 2026-01-29
+### Changed
+- [Breaking] Input: Changed GroupDistinguishedName (string) to GroupDistinguishedNames (string[]) to support adding users to multiple groups in a single operation.
+- Result: Added Details property for operation details. Error now only contains error messages for failures.
+
 ## [1.2.0] - 2025-11-20
 ### Fixed
 - Fixed LDAP exception when adding duplicate users with skip option enabled.

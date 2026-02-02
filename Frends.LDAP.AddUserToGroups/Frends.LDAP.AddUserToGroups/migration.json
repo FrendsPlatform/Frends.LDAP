@@ -1,0 +1,17 @@
+﻿[
+  {
+    "Task": "Frends.LDAP.AddUserToGroups",
+    "Version": "2.0.0",
+    "Description": "Support multiple group assignment",
+    "Migrations": [
+      {
+        "Type": "RegexMap",
+        "Source": "Input.GroupDistinguishedNames",
+        "Target": "Input.GroupDistinguishedNames",
+        "Maps": {
+          "(.*)": "[\"$1\"]"
+        }
+      }
+    ]
+  }
+]

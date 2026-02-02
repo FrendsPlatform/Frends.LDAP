@@ -12,10 +12,16 @@ public class Result
     public bool Success { get; private set; }
 
     /// <summary>
-    /// LDAP Error message.
+    /// LDAP Error message. Only populated when operation fails.
     /// </summary>
     /// <example>Entry Already Exists</example>
     public string Error { get; private set; }
+
+    /// <summary>
+    /// Operation details. Contains information about added and skipped groups when applicable.
+    /// </summary>
+    /// <example>Added to 2 group(s): cn=admin,ou=roles,dc=wimpi,dc=net, cn=managers,ou=roles,dc=wimpi,dc=net. Skipped 1 group(s): cn=developers,ou=roles,dc=wimpi,dc=net: User already exists in the group</example>
+    public string Details { get; private set; }
 
     /// <summary>
     /// User DN.
@@ -24,15 +30,16 @@ public class Result
     public string UserDistinguishedName { get; private set; }
 
     /// <summary>
-    /// Group DN.
+    /// Group DN(s).
     /// </summary>
-    /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
-    public string GroupDistinguishedName { get; private set; }
+    /// <example>new[] { "cn=admin,ou=roles,dc=wimpi,dc=net" }</example>
+    public string[] GroupDistinguishedName { get; private set; }
 
-    internal Result(bool success, string error, string userDistinguishedName, string groupDistinguishedName)
+    internal Result(bool success, string error, string details, string userDistinguishedName, string[] groupDistinguishedName)
     {
         Success = success;
         Error = error;
+        Details = details;
         UserDistinguishedName = userDistinguishedName;
         GroupDistinguishedName = groupDistinguishedName;
     }

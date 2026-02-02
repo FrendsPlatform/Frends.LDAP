@@ -20,46 +20,104 @@ public class LDAP
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
     /// <param name="cancellationToken">Cancellation token given by Frends.</param>
-    /// <returns>Object { bool Success, string Error, string UserDistinguishedName, string GroupDistinguishedName }</returns>
+    /// <returns>Object { bool Success, string Error, string Details, string UserDistinguishedName, string[] GroupDistinguishedName }</returns>
     public static Result AddUserToGroups([PropertyTab] Input input, [PropertyTab] Connection connection, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("AddUserToGroups error: Connection parameters missing.");
 
-        using LdapConnection conn = new();
+        if (input?.GroupDistinguishedNames == null || input.GroupDistinguishedNames.Length == 0)
+            throw new Exception("AddUserToGroups error: GroupDistinguishedNames is required.");
 
+        using LdapConnection conn = new();
         try
         {
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
-
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
             if (connection.TLS)
                 conn.StartTls();
             conn.Bind(connection.User, connection.Password);
 
-            LdapModification[] mods = new LdapModification[1];
-            var member = new LdapAttribute("member", input.UserDistinguishedName);
-            mods[0] = new LdapModification(LdapModification.Add, member);
+            var addedGroups = new List<string>();
+            var skippedGroups = new Dictionary<string, string>();
 
-            if (UserExistsInGroup(conn, input.UserDistinguishedName, input.GroupDistinguishedName, cancellationToken) && input.UserExistsAction.Equals(UserExistsAction.Skip))
-                return new Result(false, "AddUserToGroups LDAP error: User already exists in the group.", input.UserDistinguishedName, input.GroupDistinguishedName);
-
-            conn.Modify(input.GroupDistinguishedName, mods);
-
-            return new Result(true, null, input.UserDistinguishedName, input.GroupDistinguishedName);
-        }
-        catch (LdapException ex)
-        {
-            if (ex.ResultCode == LdapException.AttributeOrValueExists && input.UserExistsAction == UserExistsAction.Skip)
+            foreach (var groupDn in input.GroupDistinguishedNames)
             {
-                return new Result(false, "User already exists in the group, skipped as requested.", input.UserDistinguishedName, input.GroupDistinguishedName);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                LdapModification[] mods = new LdapModification[1];
+                var member = new LdapAttribute("member", input.UserDistinguishedName);
+                mods[0] = new LdapModification(LdapModification.Add, member);
+
+                bool userExists;
+                try
+                {
+                    userExists = UserExistsInGroup(conn, input.UserDistinguishedName, groupDn, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    throw CreateLdapException(
+                        $"AddUserToGroups LDAP error while checking group membership: {ex.Message}",
+                        ex,
+                        addedGroups,
+                        skippedGroups,
+                        groupDn);
+                }
+
+                if (userExists)
+                {
+                    if (input.UserExistsAction == UserExistsAction.Skip)
+                    {
+                        skippedGroups.Add(groupDn, "User already exists in the group");
+                        continue;
+                    }
+
+                    throw CreateLdapException(
+                        "AddUserToGroups LDAP error: User already exists in the group",
+                        null,
+                        addedGroups,
+                        skippedGroups,
+                        groupDn);
+                }
+
+                try
+                {
+                    conn.Modify(groupDn, mods);
+                    addedGroups.Add(groupDn);
+                }
+                catch (LdapException ex)
+                {
+                    if (ex.ResultCode == LdapException.AttributeOrValueExists && input.UserExistsAction == UserExistsAction.Skip)
+                    {
+                        skippedGroups.Add(groupDn, "User already exists in the group");
+                        continue;
+                    }
+                    var error = $"AddUserToGroups LDAP error: {ex.Message}";
+
+                    throw CreateLdapException(
+                        $"AddUserToGroups LDAP error: {ex.Message}",
+                        ex,
+                        addedGroups,
+                        skippedGroups,
+                        groupDn);
+                }
             }
-            throw new Exception($"AddUserToGroups LDAP error: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"AddUserToGroups error: {ex}");
+
+            string details = null;
+
+            if (skippedGroups.Count > 0 && addedGroups.Count == 0)
+            {
+                var skipDetails = string.Join("; ", skippedGroups.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+                details = $"User already exists in all {skippedGroups.Count} group(s), skipped as requested. Details: {skipDetails}";
+            }
+            else if (skippedGroups.Count > 0)
+            {
+                var skipDetails = string.Join("; ", skippedGroups.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+                details = $"Added to {addedGroups.Count} group(s): {string.Join(", ", addedGroups)}. Skipped {skippedGroups.Count} group(s): {skipDetails}";
+            }
+
+            return new Result(true, null, details, input.UserDistinguishedName, input.GroupDistinguishedNames);
         }
         finally
         {
@@ -94,5 +152,31 @@ public class LDAP
         }
 
         return false;
+    }
+
+    private static Exception CreateLdapException(
+    string message,
+    Exception innerException,
+    List<string> addedGroups,
+    Dictionary<string, string> skippedGroups,
+    string groupDn)
+    {
+        var contextParts = new List<string>();
+
+        if (addedGroups.Count > 0)
+            contextParts.Add($"Added to {addedGroups.Count} group(s): {string.Join(", ", addedGroups)}");
+
+        if (skippedGroups.Count > 0)
+            contextParts.Add(
+                $"Skipped {skippedGroups.Count} group(s): " +
+                string.Join("; ", skippedGroups.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
+
+        contextParts.Add($"Failed on group: {groupDn}");
+
+        var context = string.Join(". ", contextParts);
+
+        return new Exception(
+            $"{message}. Details: {context}",
+            innerException);
     }
 }

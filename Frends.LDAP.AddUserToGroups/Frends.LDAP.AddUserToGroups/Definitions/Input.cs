@@ -14,10 +14,10 @@ public class Input
     public string UserDistinguishedName { get; set; }
 
     /// <summary>
-    /// Group's distinguished name (DN)
+    /// Group distinguished name(s) (DN) to add the user to. Can specify one or multiple groups.
     /// </summary>
-    /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
-    public string GroupDistinguishedName { get; set; }
+    /// <example>new[] { "cn=admin,ou=roles,dc=wimpi,dc=net", "cn=developers,ou=roles,dc=wimpi,dc=net" }</example>
+    public string[] GroupDistinguishedNames { get; set; }
 
     /// <summary>
     /// Handle user exists exception.
