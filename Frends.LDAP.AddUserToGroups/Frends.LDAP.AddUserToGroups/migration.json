@@ -5,9 +5,12 @@
     "Description": "Support multiple group assignment",
     "Migrations": [
       {
-        "Type": "Set",
+        "Type": "RegexMap",
+        "Source": "Input.GroupDistinguishedNames",
         "Target": "Input.GroupDistinguishedNames",
-        "Value": []
+        "Maps": {
+          "(.*)": "[\"$1\"]"
+        }
       }
     ]
   }

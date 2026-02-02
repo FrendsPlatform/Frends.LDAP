@@ -20,7 +20,7 @@ public class LDAP
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
     /// <param name="cancellationToken">Cancellation token given by Frends.</param>
-    /// <returns>Object { bool Success, string Error, string Details, string UserDistinguishedName, string GroupDistinguishedName }</returns>
+    /// <returns>Object { bool Success, string Error, string Details, string UserDistinguishedName, string[] GroupDistinguishedName }</returns>
     public static Result AddUserToGroups([PropertyTab] Input input, [PropertyTab] Connection connection, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
