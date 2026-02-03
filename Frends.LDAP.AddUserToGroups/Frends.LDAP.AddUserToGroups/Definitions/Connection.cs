@@ -7,9 +7,11 @@ namespace Frends.LDAP.AddUserToGroups.Definitions;
 public class Connection
 {
     /// <summary>
-    /// Host.
+    /// LDAP server host.
+    /// This must resolve to a Domain Controller (FQDN) in the same domain
+    /// as the target group being modified.
     /// </summary>
-    /// <example>adserver.westeurope.cloudapp.azure.com</example>
+    /// <example>dc1.emea.company.com</example>
     public string Host { get; set; }
 
     /// <summary>

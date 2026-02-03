@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2026-02-03
+### Changed
+- Improved documentation for Host parameter usage
+
 ## [2.0.0] - 2026-01-29
 ### Changed
 - [Breaking] Input: Changed GroupDistinguishedName (string) to GroupDistinguishedNames (string[]) to support adding users to multiple groups in a single operation.

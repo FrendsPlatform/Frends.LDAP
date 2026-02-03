@@ -66,7 +66,7 @@ public class LDAP
 
             foreach (var item in input.Attributes)
                 modList.Add(new LdapModification(modMethod, new LdapAttribute(item.Key, string.IsNullOrWhiteSpace(item.Value) ? " " : item.Value)));
-            
+
             var mods = new LdapModification[modList.Count];
             var mtype = Type.GetType("Novell.Directory.LdapModification");
             mods = (LdapModification[])modList.ToArray(typeof(LdapModification));

@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.0] - 2026-02-03
+### Changed
+- Improved documentation for Host parameter usage
+
 ## [4.1.0] - 2025-06-17
 ### Added
 - Improved LDAP error handling by validating bind status and checking search response codes.
