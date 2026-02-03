@@ -27,7 +27,7 @@ public class LDAP
         {
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
             var entry = $"CN={input.CommonName},{input.Path}";
-            
+
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
             if (connection.TLS) conn.StartTls();

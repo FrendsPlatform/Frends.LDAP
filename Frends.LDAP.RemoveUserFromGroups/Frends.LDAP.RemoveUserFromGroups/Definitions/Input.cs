@@ -24,5 +24,5 @@ public class Input
     /// </summary>
     /// <example>HandleLDAPError.Throw</example>
     [DefaultValue(HandleLDAPError.Throw)]
-    public HandleLDAPError HandleLDAPError { get; set; } 
+    public HandleLDAPError HandleLDAPError { get; set; }
 }
