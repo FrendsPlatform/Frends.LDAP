@@ -8,9 +8,10 @@ namespace Frends.LDAP.SearchObjects.Definitions;
 public class Connection
 {
     /// <summary>
-    /// Host.
+    /// LDAP server host.
+    /// This can be a domain name, LDAP alias, or a Domain Controller FQDN.
     /// </summary>
-    /// <example>adserver.westeurope.cloudapp.azure.com</example>
+    /// <example>emea.company.com</example>
     public string Host { get; set; }
 
     /// <summary>
