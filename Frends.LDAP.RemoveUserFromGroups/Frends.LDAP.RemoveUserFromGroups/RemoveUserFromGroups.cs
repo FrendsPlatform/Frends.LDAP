@@ -32,12 +32,12 @@ public class LDAP
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
             if (connection.TLS) conn.StartTls();
             conn.Bind(connection.User, connection.Password);
-            
+
             LdapModification[] mods = new LdapModification[1];
             var member = new LdapAttribute("member", input.UserDistinguishedName);
             mods[0] = new LdapModification(LdapModification.Delete, member);
             conn.Modify(input.GroupDistinguishedName, mods);
-            
+
             return new Result(true, null, input.UserDistinguishedName, input.GroupDistinguishedName);
         }
         catch (LdapException ex)
