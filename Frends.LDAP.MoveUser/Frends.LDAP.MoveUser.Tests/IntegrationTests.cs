@@ -14,6 +14,7 @@ namespace Frends.LDAP.MoveUser.Tests;
 [TestFixture]
 [Category("Integration")]
 [NonParallelizable]
+[Platform("Linux")]
 internal class IntegrationTests
 {
     private const int LdapPort = 389;
