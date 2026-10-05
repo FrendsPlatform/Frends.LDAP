@@ -1,5 +1,4 @@
 using Frends.LDAP.MoveUser.Definitions;
-using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.MoveUser.Tests;
 
@@ -19,8 +18,4 @@ internal abstract class TestBase
     };
 
     protected static Options DefaultOptions() => new();
-
-    protected static LdapEntry UserEntry(params string[] objectClasses) => new(
-        DefaultInput().SourceDistinguishedName,
-        new LdapAttributeSet { new LdapAttribute("objectClass", objectClasses) });
 }

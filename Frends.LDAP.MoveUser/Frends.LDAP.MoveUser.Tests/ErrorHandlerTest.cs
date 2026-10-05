@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using Frends.LDAP.MoveUser.Definitions;
 using Frends.LDAP.MoveUser.Helpers;
+using Novell.Directory.Ldap;
 using NUnit.Framework;
 
 namespace Frends.LDAP.MoveUser.Tests;
@@ -58,7 +59,7 @@ internal class ErrorHandlerTest : TestBase
     [TestCase(false)]
     public void NeverConvertsCancellationIntoFailure(bool throwError)
     {
-        var cancellation = new CancellationTokenSource();
+        using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var options = new Options { ThrowErrorOnFailure = throwError, ErrorMessageOnFailure = CustomErrorMessage };
 
@@ -162,10 +163,60 @@ internal class ErrorHandlerTest : TestBase
     {
         var options = new Options { ThrowErrorOnFailure = false };
 
-        Assert.That(LDAP.MoveUser(null, DefaultConnection(), options, CancellationToken.None).Success, Is.False);
-        Assert.That(LDAP.MoveUser(DefaultInput(), null, options, CancellationToken.None).Success, Is.False);
-        Assert.Throws<ArgumentNullException>((Action)(() =>
+        var nullInput = LDAP.MoveUser(null, DefaultConnection(), options, CancellationToken.None);
+        var nullConnection = LDAP.MoveUser(DefaultInput(), null, options, CancellationToken.None);
+
+        Assert.That(nullInput.Success, Is.False);
+        Assert.That(nullInput.Error.AdditionalInfo, Is.TypeOf<ValidationException>());
+        Assert.That(nullConnection.Success, Is.False);
+        Assert.That(nullConnection.Error.AdditionalInfo, Is.TypeOf<ValidationException>());
+    }
+
+    [Test]
+    public void ThrowsWhenOptionsAreNull()
+    {
+        Assert.Throws<NullReferenceException>((Action)(() =>
             LDAP.MoveUser(DefaultInput(), DefaultConnection(), null, CancellationToken.None)));
+    }
+
+    [TestCase(LdapException.ConnectError)]
+    [TestCase(LdapException.Unavailable)]
+    [TestCase(LdapException.InvalidCredentials)]
+    [TestCase(LdapException.NoSuchObject)]
+    [TestCase(LdapException.EntryAlreadyExists)]
+    [TestCase(LdapException.InsufficientAccessRights)]
+    [TestCase(LdapException.Referral)]
+    public void ReturnsLdapFailuresWithoutLosingCause(int resultCode)
+    {
+        var failure = new LdapException("Test LDAP failure", resultCode, string.Empty);
+
+        var result = failure.Handle(new Options { ThrowErrorOnFailure = false });
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Is.EqualTo(failure.Message));
+        Assert.That(result.Error.AdditionalInfo, Is.SameAs(failure));
+    }
+
+    [Test]
+    public void DoesNotHideThrownLdapErrors()
+    {
+        var failure = new LdapException("Destination already exists", LdapException.EntryAlreadyExists, string.Empty);
+
+        var exception = Assert.Throws<LdapException>((Action)(() => failure.Handle(DefaultOptions())));
+
+        Assert.That(exception, Is.SameAs(failure));
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void RethrowsCancellationUnchanged(bool throwError)
+    {
+        var cancellation = new OperationCanceledException(new CancellationToken(true));
+        var options = new Options { ThrowErrorOnFailure = throwError, ErrorMessageOnFailure = CustomErrorMessage };
+
+        var exception = Assert.Throws<OperationCanceledException>((Action)(() => cancellation.Handle(options)));
+
+        Assert.That(exception, Is.SameAs(cancellation));
     }
 
     [Test]
