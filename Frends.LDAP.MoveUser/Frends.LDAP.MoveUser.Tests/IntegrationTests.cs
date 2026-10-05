@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using DotNet.Testcontainers.Images;
 using Frends.LDAP.MoveUser.Definitions;
 using Novell.Directory.Ldap;
 using NUnit.Framework;
@@ -14,7 +15,6 @@ namespace Frends.LDAP.MoveUser.Tests;
 [TestFixture]
 [Category("Integration")]
 [NonParallelizable]
-[Platform("Linux")]
 internal class IntegrationTests
 {
     private const int LdapPort = 389;
@@ -33,6 +33,7 @@ internal class IntegrationTests
     public async Task StartLdapContainer()
     {
         container = new ContainerBuilder("osixia/openldap:1.5.0")
+            .WithImagePullPolicy(PullPolicy.Always)
             .WithEnvironment("LDAP_DOMAIN", "example.com")
             .WithEnvironment("LDAP_ADMIN_PASSWORD", adminPassword)
             .WithEnvironment("LDAP_CONFIG_PASSWORD", adminPassword)
