@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Version>1.0.0</Version>
+        <Authors>Frends</Authors>
+        <Copyright>Frends</Copyright>
+        <Company>Frends</Company>
+        <Product>Frends</Product>
+        <PackageTags>Frends</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Description>Moves a user to another distinguished name on the same LDAP server and domain.</Description>
+        <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/FrendsPlatform/Frends.LDAP</RepositoryUrl>
+        <Nullable>disable</Nullable>
+        <NoWarn>
+            CS1591, <!-- StyleCop SA1602 already enforces documentation for enum members -->
+        </NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="FrendsTaskAnalyzers" Version="1.11.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Frends.LDAP.MoveUser.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="migration.json" PackagePath="/" Pack="true"/>
+        <Content Include="../CHANGELOG.md" PackagePath="/" Pack="true"/>
+        <Content Include="../README.md" PackagePath="/" Pack="true"/>
+		<Content Include="FrendsTaskMetadata.json"
+				 Pack="true"
+				 PackagePath="/"
+				 CopyToOutputDirectory="PreserveNewest" />
+		<AdditionalFiles Include="FrendsTaskMetadata.json" />
+    </ItemGroup>
+</Project>

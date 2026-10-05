@@ -6,6 +6,7 @@ Frends Task for Active Directory related operations.
 
 - [Frends.LDAP.CreateUser](Frends.LDAP.CreateUser/README.md)
 - [Frends.LDAP.DeleteUser](Frends.LDAP.DeleteUser/README.md)
+- [Frends.LDAP.MoveUser](Frends.LDAP.MoveUser/README.md)
 - [Frends.LDAP.SearchObjects](Frends.LDAP.SearchObjects/README.md)
 - [Frends.LDAP.UpdateUser](Frends.LDAP.UpdateUser/README.md)
 - [Frends.LDAP.AddUserToGroups](Frends.LDAP.AddUserToGroups/README.md)
