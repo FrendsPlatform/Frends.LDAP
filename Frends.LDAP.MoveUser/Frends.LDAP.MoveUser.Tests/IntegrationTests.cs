@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using DotNet.Testcontainers.Images;
 using Frends.LDAP.MoveUser.Definitions;
 using Novell.Directory.Ldap;
 using NUnit.Framework;
@@ -17,11 +16,10 @@ namespace Frends.LDAP.MoveUser.Tests;
 [NonParallelizable]
 internal class IntegrationTests
 {
-    private const int LdapPort = 389;
-    private const string BaseDn = "dc=example,dc=com";
+    private const int LdapPort = 10389;
+    private const string BaseDn = "dc=wimpi,dc=net";
 
     private readonly List<string> cleanupDns = [];
-    private readonly string adminPassword = Guid.NewGuid().ToString("N");
     private IContainer container;
     private Connection connection;
     private LdapConnection admin;
@@ -32,15 +30,10 @@ internal class IntegrationTests
     [OneTimeSetUp]
     public async Task StartLdapContainer()
     {
-        container = new ContainerBuilder("osixia/openldap:1.5.0")
-            .WithImagePullPolicy(PullPolicy.Always)
-            .WithEnvironment("LDAP_DOMAIN", "example.com")
-            .WithEnvironment("LDAP_ADMIN_PASSWORD", adminPassword)
-            .WithEnvironment("LDAP_CONFIG_PASSWORD", adminPassword)
-            .WithEnvironment("LDAP_TLS", "false")
+        container = new ContainerBuilder("dwimberger/ldap-ad-it:latest")
             .WithPortBinding(LdapPort, true)
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilMessageIsLogged("slapd starting")
+                .UntilMessageIsLogged("LDAP server started")
                 .UntilExternalTcpPortIsAvailable(LdapPort))
             .Build();
 
@@ -51,26 +44,15 @@ internal class IntegrationTests
         {
             Host = container.Hostname,
             Port = container.GetMappedPublicPort(LdapPort),
-            User = $"cn=admin,{BaseDn}",
-            Password = adminPassword,
+            User = "uid=admin,ou=system",
+            Password = "secret",
         };
         admin = LDAP.CreateConnection(connection, new Options { TimeoutSeconds = 5 });
         admin.Connect(connection.Host, connection.Port);
-        admin.Bind("cn=admin,cn=config", adminPassword);
-
-        // Model AD-specific object classes in the disposable OpenLDAP server.
-        admin.Add(new LdapEntry("cn=moveuser-tests,cn=schema,cn=config", new LdapAttributeSet
-        {
-            new LdapAttribute("objectClass", "olcSchemaConfig"),
-            new LdapAttribute("cn", "moveuser-tests"),
-            new LdapAttribute("olcObjectClasses", new[]
-            {
-                "( 1.3.6.1.4.1.4203.666.11.999.1 NAME 'user' SUP person STRUCTURAL )",
-                "( 1.3.6.1.4.1.4203.666.11.999.2 NAME 'computer' SUP user STRUCTURAL )",
-            }),
-        }));
-
         admin.Bind(connection.User, connection.Password);
+
+        AddObjectClass("1.3.6.1.4.1.4203.666.11.999.1", "user", "person");
+        AddObjectClass("1.3.6.1.4.1.4203.666.11.999.2", "computer", "user");
     }
 
     [SetUp]
@@ -140,7 +122,10 @@ internal class IntegrationTests
         Assert.That(result.Error, Is.Null);
         var moved = admin.Read(input.DestinationDistinguishedName, new[] { identifier.Name, "cn", "sn", "description" });
         Assert.That(moved.GetAttribute(identifier.Name).ByteValue, Is.EqualTo(identifier.ByteValue));
-        Assert.That(moved.GetAttribute("cn").StringValueArray, Is.EquivalentTo(new[] { destinationName }));
+        var expectedNames = destinationName == "Move, User"
+            ? new[] { destinationName }
+            : new[] { "Move, User", destinationName };
+        Assert.That(moved.GetAttribute("cn").StringValueArray, Is.EquivalentTo(expectedNames));
         Assert.That(moved.GetAttribute("sn").StringValue, Is.EqualTo("User"));
         Assert.That(moved.GetAttribute("description").StringValue, Is.EqualTo("MoveUser integration test"));
         var missingSource = Assert.Throws<LdapException>((Action)(() => admin.Read(input.SourceDistinguishedName)));
@@ -171,7 +156,7 @@ internal class IntegrationTests
             exception = (LdapException)result.Error.AdditionalInfo;
         }
 
-        Assert.That(exception.ResultCode, Is.EqualTo(LdapException.EntryAlreadyExists));
+        Assert.That(exception.ResultCode, Is.EqualTo(LdapException.OperationsError));
         Assert.That(admin.Read(input.SourceDistinguishedName, new[] { "entryUUID" }).GetAttribute("entryUUID").StringValue, Is.EqualTo(sourceId));
         Assert.That(admin.Read(input.DestinationDistinguishedName, new[] { "entryUUID" }).GetAttribute("entryUUID").StringValue, Is.EqualTo(destinationId));
     }
@@ -310,6 +295,18 @@ internal class IntegrationTests
             new LdapAttribute("ou", name),
         }));
         cleanupDns.Add(dn);
+    }
+
+    private void AddObjectClass(string oid, string name, string parent)
+    {
+        admin.Add(new LdapEntry($"m-oid={oid},ou=objectclasses,cn=microsoft,ou=schema", new LdapAttributeSet
+        {
+            new LdapAttribute("objectClass", new[] { "metaObjectClass", "metaTop", "top" }),
+            new LdapAttribute("m-oid", oid),
+            new LdapAttribute("m-name", name),
+            new LdapAttribute("m-supObjectClass", parent),
+            new LdapAttribute("m-typeObjectClass", "STRUCTURAL"),
+        }));
     }
 
     private void AddUser(string dn, string objectClass = "inetOrgPerson")
