@@ -1,0 +1,12 @@
+﻿[
+  {
+    "Task": "Frends.LDAP.MoveUser",
+    "Migrations": [
+      {
+        "Version": "1.0.0",
+        "Description": "Initial implementation of same-server, same-domain user moves.",
+        "Migration": []
+      }
+    ]
+  }
+]
