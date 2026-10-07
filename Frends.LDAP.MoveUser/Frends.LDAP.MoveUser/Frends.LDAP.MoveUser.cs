@@ -21,7 +21,7 @@ public static class LDAP
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string SourceDistinguishedName, string DestinationDistinguishedName, object Error { string Message, Exception AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result MoveUser(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
