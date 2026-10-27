@@ -2,8 +2,8 @@
 
 ## [2.0.0] - 2026-10-27
 ### Changed
-- **[Breaking Change]** Added `Options` and `CancellationToken` parameters to the Task method.
-- **[Breaking Change]** Added `ThrowErrorOnFailure` and `ErrorMessageOnFailure` options. By default LDAP errors are now thrown instead of returned in the result.
+- Added `Options` and `CancellationToken` parameters to the Task method.
+- Added `ThrowErrorOnFailure` and `ErrorMessageOnFailure` options. By default LDAP errors are now thrown instead of returned in the result.
 - **[Breaking Change]** The `Error` result property is now an object with `Message` and `AdditionalInfo` instead of a string. Validation and connection errors are now handled through the same error handling as LDAP errors.
 - Updated the target framework to .NET 8.
 
