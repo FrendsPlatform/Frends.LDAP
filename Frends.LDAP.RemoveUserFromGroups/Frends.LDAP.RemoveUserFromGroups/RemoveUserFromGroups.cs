@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using Frends.LDAP.RemoveUserFromGroups.Definitions;
+using Frends.LDAP.RemoveUserFromGroups.Helpers;
 using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.RemoveUserFromGroups;
@@ -19,18 +20,18 @@ public static class LDAP
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>Object { bool Success, string Error, string CommonName, string Path }</returns>
+    /// <returns>object { bool Success, string UserDistinguishedName, string GroupDistinguishedName, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result RemoveUserFromGroups([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("RemoveUserFromGroups error: Connection parameters missing.");
-
-        cancellationToken.ThrowIfCancellationRequested();
-
         LdapConnection conn = new();
 
         try
         {
+            if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
+                throw new ArgumentException("Connection parameters missing.");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
 
             conn.SecureSocketLayer = connection.SecureSocketLayer;
@@ -43,23 +44,25 @@ public static class LDAP
             mods[0] = new LdapModification(LdapModification.Delete, member);
             conn.Modify(input.GroupDistinguishedName, mods);
 
-            return new Result(true, null, input.UserDistinguishedName, input.GroupDistinguishedName);
-        }
-        catch (LdapException ex)
-        {
-            if (input.HandleLDAPError.Equals(HandleLDAPError.Skip))
-                return new Result(false, ex.Message, input.UserDistinguishedName, input.GroupDistinguishedName);
-            else
-                throw new Exception($"RemoveUserFromGroups LDAP error: {ex.Message}");
+            return new Result
+            {
+                Success = true,
+                UserDistinguishedName = input.UserDistinguishedName,
+                GroupDistinguishedName = input.GroupDistinguishedName,
+                Error = null,
+            };
         }
         catch (Exception ex)
         {
-            throw new Exception($"RemoveUserFromGroups error: {ex}");
+            return ex.Handle(options, input);
         }
         finally
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            if (conn.Connected)
+            {
+                if (connection.TLS) conn.StopTls();
+                conn.Disconnect();
+            }
         }
     }
 }

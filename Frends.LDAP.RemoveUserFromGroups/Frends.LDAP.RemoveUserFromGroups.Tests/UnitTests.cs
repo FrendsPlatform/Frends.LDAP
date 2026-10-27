@@ -22,7 +22,7 @@ public class UnitTests
     private Connection? connection;
 
     [TestMethod]
-    public void Update_HandleLDAPError_Throw_Test()
+    public void Update_ThrowErrorOnFailure_True_Test()
     {
         var tuser = "Tes Tuser" + Guid.NewGuid().ToString();
         var dn = $"CN={tuser},{path}";
@@ -32,7 +32,6 @@ public class UnitTests
         {
             UserDistinguishedName = dn,
             GroupDistinguishedName = groupDn,
-            HandleLDAPError = HandleLDAPError.Throw,
         };
         connection = new()
         {
@@ -49,7 +48,7 @@ public class UnitTests
     }
 
     [TestMethod]
-    public void Update_HandleLDAPError_Skip_Test()
+    public void Update_ThrowErrorOnFailure_False_Test()
     {
         var tuser = "Tes Tuser" + Guid.NewGuid().ToString();
         var dn = $"CN={tuser},{path}";
@@ -59,7 +58,6 @@ public class UnitTests
         {
             UserDistinguishedName = dn,
             GroupDistinguishedName = groupDn,
-            HandleLDAPError = HandleLDAPError.Skip,
         };
         connection = new()
         {
@@ -71,7 +69,7 @@ public class UnitTests
             TLS = false,
         };
 
-        var result = LDAP.RemoveUserFromGroups(input, connection, new Options(), CancellationToken.None);
+        var result = LDAP.RemoveUserFromGroups(input, connection, new Options { ThrowErrorOnFailure = false }, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(false) && result.Error != null);
     }
 
