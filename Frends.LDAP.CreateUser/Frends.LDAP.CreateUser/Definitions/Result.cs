@@ -5,6 +5,15 @@
 /// </summary>
 public class Result
 {
+    internal Result(bool success, string error, string commonName, bool passwordSet, string path)
+    {
+        Success = success;
+        Error = error;
+        CommonName = commonName;
+        PasswordSet = passwordSet;
+        Path = path;
+    }
+
     /// <summary>
     /// User created.
     /// </summary>
@@ -34,13 +43,4 @@ public class Result
     /// </summary>
     /// <example>CN=Users,DC=Example,DC=Com</example>
     public string Path { get; private set; }
-
-    internal Result(bool success, string error, string commonName, bool passwordSet, string path)
-    {
-        Success = success;
-        Error = error;
-        CommonName = commonName;
-        PasswordSet = passwordSet;
-        Path = path;
-    }
 }

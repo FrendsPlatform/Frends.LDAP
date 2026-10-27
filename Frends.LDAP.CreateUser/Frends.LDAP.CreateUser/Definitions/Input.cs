@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+
 namespace Frends.LDAP.CreateUser.Definitions;
 
 /// <summary>
@@ -8,7 +9,7 @@ namespace Frends.LDAP.CreateUser.Definitions;
 public class Input
 {
     /// <summary>
-    /// ObjectClass. 
+    /// ObjectClass.
     /// </summary>
     /// <example>User</example>
     public string ObjectClass { get; set; }
@@ -66,26 +67,8 @@ public class Input
     public string Password { get; set; }
 
     /// <summary>
-    /// Custom attribute values. 
+    /// Custom attribute values.
     /// </summary>
     /// <example>Telephone, +358123456789</example>
     public Attributes[] Attributes { get; set; } = Array.Empty<Attributes>();
-}
-
-/// <summary>
-/// Attribute values.
-/// </summary>
-public class Attributes
-{
-    /// <summary>
-    /// Key.
-    /// </summary>
-    /// <example>Telephone</example>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Value.
-    /// </summary>
-    /// <example>+358123456789</example>
-    public string Value { get; set; }
 }

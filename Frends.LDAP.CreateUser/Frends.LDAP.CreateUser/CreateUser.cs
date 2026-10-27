@@ -1,15 +1,16 @@
-﻿using Frends.LDAP.CreateUser.Definitions;
+﻿using System;
 using System.ComponentModel;
-using Novell.Directory.Ldap;
-using System;
 using System.Text;
+using System.Threading;
+using Frends.LDAP.CreateUser.Definitions;
+using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.CreateUser;
 
 /// <summary>
 /// LDAP task.
 /// </summary>
-public class LDAP
+public static class LDAP
 {
     /// <summary>
     /// Create a user to Active Directory.
@@ -17,14 +18,17 @@ public class LDAP
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>Object { bool Success, string Error, string CommonName, bool PasswordSet, string Path }</returns>
-    public static Result CreateUser([PropertyTab] Input input, [PropertyTab] Connection connection)
+    public static Result CreateUser([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("Connection parameters missing.");
 
         if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
             throw new Exception("Active Directory password changes require SSL or TLS or both.");
+        cancellationToken.ThrowIfCancellationRequested();
         LdapConnection conn = new();
 
         try
@@ -72,7 +76,11 @@ public class LDAP
         }
         catch (LdapException ex)
         {
-            return new Result(false, ex.Message, input.CommonName, false, input.Path);
+            if (options.ThrowErrorOnFailure)
+                throw string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex : new Exception(options.ErrorMessageOnFailure, ex);
+
+            var message = string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : $"{options.ErrorMessageOnFailure}: {ex.Message}";
+            return new Result(false, message, input.CommonName, false, input.Path);
         }
         catch (Exception ex)
         {
@@ -85,10 +93,3 @@ public class LDAP
         }
     }
 }
-
-
-
-
-
-
-
