@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading;
 using Frends.LDAP.CreateUser.Definitions;
+using Frends.LDAP.CreateUser.Helpers;
 using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.CreateUser;
@@ -20,19 +21,20 @@ public static class LDAP
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>Object { bool Success, string Error, string CommonName, bool PasswordSet, string Path }</returns>
+    /// <returns>object { bool Success, string CommonName, bool PasswordSet, string Path, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result CreateUser([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("Connection parameters missing.");
-
-        if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
-            throw new Exception("Active Directory password changes require SSL or TLS or both.");
-        cancellationToken.ThrowIfCancellationRequested();
         LdapConnection conn = new();
 
         try
         {
+            if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
+                throw new Exception("Connection parameters missing.");
+
+            if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
+                throw new Exception("Active Directory password changes require SSL or TLS or both.");
+
+            cancellationToken.ThrowIfCancellationRequested();
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
             var entry = $"CN={input.CommonName},{input.Path}";
 
@@ -72,24 +74,26 @@ public static class LDAP
 
             LdapEntry newEntry = new(entry, attributeSet);
             conn.Add(newEntry);
-            return new Result(true, null, input.CommonName, input.SetPassword, input.Path);
-        }
-        catch (LdapException ex)
-        {
-            if (options.ThrowErrorOnFailure)
-                throw string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex : new Exception(options.ErrorMessageOnFailure, ex);
-
-            var message = string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : $"{options.ErrorMessageOnFailure}: {ex.Message}";
-            return new Result(false, message, input.CommonName, false, input.Path);
+            return new Result
+            {
+                Success = true,
+                CommonName = input.CommonName,
+                PasswordSet = input.SetPassword,
+                Path = input.Path,
+                Error = null,
+            };
         }
         catch (Exception ex)
         {
-            throw new Exception($"CreateUser error: {ex}");
+            return ex.Handle(options);
         }
         finally
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            if (conn.Connected)
+            {
+                if (connection.TLS) conn.StopTls();
+                conn.Disconnect();
+            }
         }
     }
 }

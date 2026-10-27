@@ -45,7 +45,7 @@ public class UnitTests
         };
 
         var result = LDAP.CreateUser(input, connection, options, CancellationToken.None);
-        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Object"));
+        Assert.IsTrue(result.Success.Equals(false) && result.Error.Message.Contains("No Such Object"));
     }
 
     [TestMethod]
@@ -72,8 +72,9 @@ public class UnitTests
             TLS = false,
         };
 
-        var ex = Assert.ThrowsException<Exception>(() => LDAP.CreateUser(input, connection, options, CancellationToken.None));
-        StringAssert.Contains(ex.Message, "require SSL or TLS");
+        var result = LDAP.CreateUser(input, connection, options, CancellationToken.None);
+        Assert.IsFalse(result.Success);
+        StringAssert.Contains(result.Error.Message, "require SSL or TLS");
     }
 
     [TestMethod]
