@@ -1,4 +1,4 @@
-﻿namespace Frends.LDAP.UpdateUser.Definitions;
+namespace Frends.LDAP.UpdateUser.Definitions;
 
 /// <summary>
 /// Modification methods.
@@ -18,5 +18,5 @@ public enum ModificationMethod
     /// <summary>
     /// Replaces all existing values of the given attribute with the new values listed, creating the attribute if it does not already exist. A replace with no value deletes the entire attribute if it exists, and is ignored if the attribute does not exist.
     /// </summary>
-    Replace
+    Replace,
 }

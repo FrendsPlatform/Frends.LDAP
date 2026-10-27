@@ -1,4 +1,4 @@
-﻿namespace Frends.LDAP.UpdateUser.Definitions;
+namespace Frends.LDAP.UpdateUser.Definitions;
 
 /// <summary>
 /// Task's result.
@@ -9,31 +9,23 @@ public class Result
     /// Update completed.
     /// </summary>
     /// <example>true</example>
-    public bool Success { get; private set; }
+    public bool Success { get; set; }
 
     /// <summary>
-    /// LDAP Error message.
+    /// Error that occurred during task execution.
     /// </summary>
-    /// <example>Entry Already Exists</example>
-    public string Error { get; private set; }
+    /// <example>object { string Message, Exception AdditionalInfo }</example>
+    public Error Error { get; set; }
 
     /// <summary>
     /// Common name.
     /// </summary>
     /// <example>Firstname Lastname</example>
-    public string CommonName { get; private set; }
+    public string CommonName { get; set; }
 
     /// <summary>
     /// Path.
     /// </summary>
     /// <example>CN=Users,DC=Example,DC=Com</example>
-    public string Path { get; private set; }
-
-    internal Result(bool success, string error, string commonName, string path)
-    {
-        Success = success;
-        Error = error;
-        CommonName = commonName;
-        Path = path;
-    }
+    public string Path { get; set; }
 }
