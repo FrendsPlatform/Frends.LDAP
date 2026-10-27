@@ -43,7 +43,7 @@ public class UnitTests
             TLS = false,
         };
 
-        var ex = Assert.ThrowsException<Exception>(() => LDAP.RemoveUserFromGroups(input, connection, new Options(), CancellationToken.None));
+        var ex = Assert.ThrowsException<LdapException>(() => LDAP.RemoveUserFromGroups(input, connection, new Options(), CancellationToken.None));
         Assert.IsTrue(ex.Message != null);
     }
 
