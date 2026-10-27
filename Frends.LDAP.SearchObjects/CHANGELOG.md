@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.0] - 2026-10-27
+### Changed
+- **[Breaking Change]** Task now targets .NET 8.
+- **[Breaking Change]** Added the `Options` parameter with `ThrowErrorOnFailure` and `ErrorMessageOnFailure`. Task now throws on failure by default.
+- **[Breaking Change]** Removed the `ThrowExceptionOnError` property from `Connection`; use `Options.ThrowErrorOnFailure` instead.
+- **[Breaking Change]** `Result.Error` is now an object with `Message` and `AdditionalInfo` instead of a string.
+
 ## [4.2.0] - 2026-02-03
 ### Changed
 - Improved documentation for Host parameter usage

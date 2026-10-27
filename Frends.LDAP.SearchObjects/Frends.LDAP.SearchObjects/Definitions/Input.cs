@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -23,7 +23,7 @@ public class Input
     public Scopes Scope { get; set; }
 
     /// <summary>
-    /// The search filter defines the entries that will be returned by the search. The LDAP search filter grammar is specified in RFC 2254 and 2251. The grammar uses ABNF notation. If you are looking for all employees with a title of engineer, the search filter would be (title=engineer). 
+    /// The search filter defines the entries that will be returned by the search. The LDAP search filter grammar is specified in RFC 2254 and 2251. The grammar uses ABNF notation. If you are looking for all employees with a title of engineer, the search filter would be (title=engineer).
     /// </summary>
     /// <example>(title=engineer)</example>
     public string Filter { get; set; }
@@ -51,7 +51,7 @@ public class Input
     public SearchDereference SearchDereference { get; set; }
 
     /// <summary>
-    /// The maximum number of search results to return. 
+    /// The maximum number of search results to return.
     /// This acts as a hard limit—regardless of page size or batch size, no more than this number of results will be returned.
     /// Set to 0 for no limit.
     /// </summary>
@@ -76,7 +76,7 @@ public class Input
     public int PageSize { get; set; }
 
     /// <summary>
-    /// If true, returns the names but not the values of the attributes found. 
+    /// If true, returns the names but not the values of the attributes found.
     /// If false, returns the names and values for attributes found.
     /// </summary>
     /// <example>false</example>
@@ -124,23 +124,4 @@ public class Input
     /// }
     /// </example>
     public Attributes[] Attributes { get; set; } = Array.Empty<Attributes>();
-}
-
-/// <summary>
-/// Attribute values.
-/// </summary>
-public class Attributes
-{
-    /// <summary>
-    /// Key of the attribute.
-    /// </summary>
-    /// <example>title</example>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Determines the return type of the attribute.
-    /// </summary>
-    /// <example>ReturnType.Guid</example>
-    [DefaultValue(ReturnType.String)]
-    public ReturnType ReturnType { get; set; }
 }

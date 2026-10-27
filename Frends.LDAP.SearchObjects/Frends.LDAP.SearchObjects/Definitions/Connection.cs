@@ -1,5 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+
 namespace Frends.LDAP.SearchObjects.Definitions;
 
 /// <summary>
@@ -69,11 +70,4 @@ public class Connection
     [UIHint(nameof(AnonymousBind), "", false)]
     [PasswordPropertyText]
     public string Password { get; set; }
-
-    /// <summary>
-    /// If enabled Task throws an exception when LDAP error happens.
-    /// </summary>
-    /// <example>true</example>
-    [DefaultValue(false)]
-    public bool ThrowExceptionOnError { get; set; }
 }

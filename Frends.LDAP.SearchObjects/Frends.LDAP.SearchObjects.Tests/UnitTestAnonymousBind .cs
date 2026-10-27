@@ -1,4 +1,4 @@
-﻿using Frends.LDAP.SearchObjects.Definitions;
+using Frends.LDAP.SearchObjects.Definitions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,6 @@ public class UnitTestAnonymousBind
             TLS = false,
             LDAPProtocolVersion = LDAPVersion.V3,
             AnonymousBind = true,
-            ThrowExceptionOnError = false
         };
 
         var badInput = new Input
@@ -62,10 +61,10 @@ public class UnitTestAnonymousBind
             MaxResults = 5
         };
 
-        var result = LDAP.SearchObjects(badInput, badConnection, CancellationToken.None);
+        var result = LDAP.SearchObjects(badInput, badConnection, new Options { ThrowErrorOnFailure = false }, CancellationToken.None);
 
         Assert.IsFalse(result.Success, "Expected Success to be false when anonymous bind fails.");
-        Assert.IsTrue(!string.IsNullOrEmpty(result.Error), "Expected an error message.");
-        Assert.IsTrue(result.Error.Contains("bind"), "Expected error message to mention bind.");
+        Assert.IsNotNull(result.Error, "Expected an error.");
+        Assert.IsTrue(result.Error.Message.Contains("bind"), "Expected error message to mention bind.");
     }
 }

@@ -68,7 +68,7 @@ public class UnitTests
             EnableBom = false,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
 
         Assert.IsTrue(result.SearchResult.Any(x =>
@@ -107,7 +107,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -145,7 +145,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -183,7 +183,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -221,7 +221,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -259,7 +259,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -297,7 +297,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true) && result.SearchResult.Count == 2);
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName is not null &&
@@ -331,7 +331,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -372,7 +372,7 @@ public class UnitTests
             Attributes = null,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true) && result.SearchResult.Count == 2);
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
@@ -419,7 +419,7 @@ public class UnitTests
             Attributes = atr.ToArray(),
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
         Assert.IsTrue(result.Success.Equals(true));
 
         Assert.IsTrue(result.SearchResult.Any(x =>
@@ -492,7 +492,7 @@ public class UnitTests
 
         foreach (var conn in conns)
         {
-            var ex = Assert.ThrowsException<Exception>(() => LDAP.SearchObjects(input, conn, default));
+            var ex = Assert.ThrowsException<Exception>(() => LDAP.SearchObjects(input, conn, new Options(), default));
             Assert.AreEqual(errors[index], ex.Message);
             index++;
         }
@@ -510,7 +510,6 @@ public class UnitTests
             Port = _port,
             TLS = false,
             LDAPProtocolVersion = LDAPVersion.V3,
-            ThrowExceptionOnError = true
         };
 
         input = new()
@@ -529,7 +528,7 @@ public class UnitTests
             EnableBom = false,
         };
 
-        var ex = Assert.ThrowsException<LdapException>(() => LDAP.SearchObjects(input, connection, default));
+        var ex = Assert.ThrowsException<LdapException>(() => LDAP.SearchObjects(input, connection, new Options(), default));
         Assert.AreEqual("Invalid DN Syntax", ex.Message);
         Console.WriteLine(ex.Message);
     }
@@ -571,7 +570,7 @@ public class UnitTests
             PageSize = 3,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
 
         Assert.IsTrue(result.Success, "Search failed.");
         Assert.AreEqual(2, result.SearchResult.Count, "Should return only 2 results.");
@@ -589,7 +588,7 @@ public class UnitTests
             PageSize = 2,
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
 
         Assert.IsTrue(result.Success, "Search failed.");
         Assert.AreEqual(5, result.SearchResult.Count, "Should return all 5 results using paging.");
@@ -607,7 +606,7 @@ public class UnitTests
             PageSize = 0, // No paging
         };
 
-        var result = LDAP.SearchObjects(input, connection, default);
+        var result = LDAP.SearchObjects(input, connection, new Options(), default);
 
         Assert.IsTrue(result.Success, "Search failed.");
         Assert.AreEqual(5, result.SearchResult.Count, "Should return all 5 results without paging.");

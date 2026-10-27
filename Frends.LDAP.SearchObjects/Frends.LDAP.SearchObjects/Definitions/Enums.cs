@@ -1,4 +1,4 @@
-﻿namespace Frends.LDAP.SearchObjects.Definitions;
+namespace Frends.LDAP.SearchObjects.Definitions;
 
 /// <summary>
 /// Search scopes.
@@ -18,7 +18,7 @@ public enum Scopes
     /// <summary>
     /// Searches the base DN and all entries within its subtree.
     /// </summary>
-    ScopeSub
+    ScopeSub,
 }
 
 /// <summary>
@@ -56,6 +56,7 @@ public enum LDAPVersion
     /// LDAP Version 2
     /// </summary>
     V2,
+
     /// <summary>
     /// LDAP Version 3
     /// </summary>
@@ -89,6 +90,6 @@ public enum ReturnType
 #pragma warning disable 1591, SA1602
     String,
     ByteArray,
-    Guid
+    Guid,
 #pragma warning restore 1591, SA1602
 }
