@@ -2,7 +2,7 @@
 
 ## [3.0.0] - 2026-10-27
 ### Changed
-- **[Breaking Change]** Task now requires the new `Options` parameter with `ThrowErrorOnFailure` and `ErrorMessageOnFailure` properties. By default the Task still throws on failure.
+- Task now requires the new `Options` parameter with `ThrowErrorOnFailure` and `ErrorMessageOnFailure` properties. By default the Task still throws on failure.
 - **[Breaking Change]** `Result.Error` is now an object with `Message` and `AdditionalInfo` instead of a string. It is populated when `ThrowErrorOnFailure` is false.
 - Updated the Task to target .NET 8.
 
