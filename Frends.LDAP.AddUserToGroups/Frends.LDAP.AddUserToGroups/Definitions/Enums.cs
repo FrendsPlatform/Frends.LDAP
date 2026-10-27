@@ -13,5 +13,5 @@ public enum UserExistsAction
     /// <summary>
     /// Do nothing and add LDAP error message to the task's result.
     /// </summary>
-    Skip
+    Skip,
 }

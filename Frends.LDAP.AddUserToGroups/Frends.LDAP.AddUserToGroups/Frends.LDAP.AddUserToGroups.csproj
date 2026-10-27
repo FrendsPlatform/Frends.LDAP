@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net6.0</TargetFrameworks>
-	<Version>2.1.0</Version>
+	<TargetFramework>net8.0</TargetFramework>
+	<Version>3.0.0</Version>
 	<Authors>Frends</Authors>
 	<Copyright>Frends</Copyright>
 	<Company>Frends</Company>
@@ -16,6 +16,7 @@
   </PropertyGroup>
 	
   <ItemGroup>
+	  <AdditionalFiles Include="FrendsTaskMetadata.json" />
 	  <Content Include="migration.json" PackagePath="/" Pack="true" />
 	  <None Include="FrendsTaskMetadata.json" Pack="true" PackagePath="/">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -29,6 +30,14 @@
 	</ItemGroup>
 	
   <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FrendsTaskAnalyzers" Version="1.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
 	<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 	<PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
