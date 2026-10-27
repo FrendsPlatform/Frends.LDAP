@@ -1,10 +1,18 @@
-﻿namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
+namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
 
 /// <summary>
 /// Task's result.
 /// </summary>
 public class Result
 {
+    internal Result(bool success, string error, string userDistinguishedName, string groupDistinguishedName)
+    {
+        Success = success;
+        Error = error;
+        UserDistinguishedName = userDistinguishedName;
+        GroupDistinguishedName = groupDistinguishedName;
+    }
+
     /// <summary>
     /// User has been removed from group(s).
     /// </summary>
@@ -28,12 +36,4 @@ public class Result
     /// </summary>
     /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
     public string GroupDistinguishedName { get; private set; }
-
-    internal Result(bool success, string error, string userDistinguishedName, string groupDistinguishedName)
-    {
-        Success = success;
-        Error = error;
-        UserDistinguishedName = userDistinguishedName;
-        GroupDistinguishedName = groupDistinguishedName;
-    }
 }

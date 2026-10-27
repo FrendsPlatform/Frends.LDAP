@@ -1,14 +1,15 @@
-﻿using Frends.LDAP.RemoveUserFromGroups.Definitions;
-using System.ComponentModel;
-using Novell.Directory.Ldap;
 using System;
+using System.ComponentModel;
+using System.Threading;
+using Frends.LDAP.RemoveUserFromGroups.Definitions;
+using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.RemoveUserFromGroups;
 
 /// <summary>
 /// LDAP task.
 /// </summary>
-public class LDAP
+public static class LDAP
 {
     /// <summary>
     /// Remove a user from Active Directory groups.
@@ -16,11 +17,15 @@ public class LDAP
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>Object { bool Success, string Error, string CommonName, string Path }</returns>
-    public static Result RemoveUserFromGroups([PropertyTab] Input input, [PropertyTab] Connection connection)
+    public static Result RemoveUserFromGroups([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("RemoveUserFromGroups error: Connection parameters missing.");
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         LdapConnection conn = new();
 

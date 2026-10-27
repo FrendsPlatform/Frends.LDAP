@@ -1,4 +1,4 @@
-﻿namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
+namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
 
 /// <summary>
 /// How to handle LDAP errors.
@@ -13,5 +13,5 @@ public enum HandleLDAPError
     /// <summary>
     /// Do nothing and add LDAP error message to the task's result.
     /// </summary>
-    Skip
+    Skip,
 }
