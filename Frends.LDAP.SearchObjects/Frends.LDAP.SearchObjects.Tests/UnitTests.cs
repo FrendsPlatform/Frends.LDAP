@@ -1,42 +1,41 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Frends.LDAP.SearchObjects.Definitions;
-using Novell.Directory.Ldap;
 using System.Text;
+using Frends.LDAP.SearchObjects.Definitions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.SearchObjects.Tests;
 
 [TestClass]
 public class UnitTests
 {
-
     /*
         Create a simple LDAP server to docker
         docker run -d -it --rm -p 10389:10389 dwimberger/ldap-ad-it
     */
 
-    private readonly string? _host = "127.0.0.1";
-    private readonly int _port = 10389;
-    private readonly string? _user = "uid=admin,ou=system";
-    private readonly string? _pw = "secret";
-    private readonly string _path = "ou=users,dc=wimpi,dc=net";
-    private readonly List<string> _cns = new() { "Tes Tuser", "Qwe Rty", "Foo Bar" };
-    private readonly byte[] _photo = File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestData/test.png"));
+    private readonly string? host = "127.0.0.1";
+    private readonly int port = 10389;
+    private readonly string? user = "uid=admin,ou=system";
+    private readonly string? pw = "secret";
+    private readonly string path = "ou=users,dc=wimpi,dc=net";
+    private readonly List<string> cns = new() { "Tes Tuser", "Qwe Rty", "Foo Bar" };
+    private readonly byte[] photo = File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../TestData/test.png"));
 
-    Input? input;
-    Connection? connection;
+    private Input? input;
+    private Connection? connection;
 
     [TestInitialize]
     public void Setup()
     {
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
-            LDAPProtocolVersion = LDAPVersion.V3
+            LDAPProtocolVersion = LDAPVersion.V3,
         };
 
         try
@@ -54,7 +53,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -80,10 +79,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -95,7 +93,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeOne,
             Filter = null,
             MsLimit = default,
@@ -118,10 +116,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -133,7 +130,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -156,10 +153,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -171,7 +167,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -194,10 +190,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -209,7 +204,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -232,10 +227,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -247,7 +241,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -270,10 +264,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -285,7 +278,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -310,8 +303,7 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value is not null) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value is not null))
-        );
+            x.AttributeSet.Any(y => y.Value is not null)));
     }
 
     [TestMethod]
@@ -319,7 +311,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -344,10 +336,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value is null) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value is null)
-        ));
+            x.AttributeSet.Any(y => y.Value is null)));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("CN=Qwe Rty,ou=users,dc=wimpi,dc=net") ||
@@ -359,7 +350,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = "(title=engineer)",
             MsLimit = default,
@@ -383,10 +374,9 @@ public class UnitTests
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer"))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Foo Bar,ou=users,dc=wimpi,dc=net")));
 
@@ -406,7 +396,7 @@ public class UnitTests
 
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -424,25 +414,22 @@ public class UnitTests
 
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
-            x.AttributeSet.Any(y => y.Key.Equals("cn")))
-        );
+            x.AttributeSet.Any(y => y.Key.Equals("cn"))));
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net") &&
-            x.AttributeSet.Any(y => y.Key.Equals("photo")))
-        );
+            x.AttributeSet.Any(y => y.Key.Equals("photo"))));
 
-        Assert.AreEqual(Convert.ToBase64String(result.SearchResult.First(x => x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net")).AttributeSet.First(x => x.Key.Equals("photo")).Value), Convert.ToBase64String(_photo));
+        Assert.AreEqual(Convert.ToBase64String(result.SearchResult.First(x => x.DistinguishedName.Equals("CN=Tes Tuser,ou=users,dc=wimpi,dc=net")).AttributeSet.First(x => x.Key.Equals("photo")).Value), Convert.ToBase64String(photo));
 
         Assert.IsFalse(result.SearchResult.Any(x =>
             x.AttributeSet.Any(y => y.Key.Equals("sn")) ||
-            x.AttributeSet.Any(y => y.Value.Equals("Tes Tuser")) &&
+            (x.AttributeSet.Any(y => y.Value.Equals("Tes Tuser")) &&
             x.AttributeSet.Any(y => y.Key.Equals("givenname")) &&
             x.AttributeSet.Any(y => y.Value.Equals("Te")) &&
             x.AttributeSet.Any(y => y.Key.Equals("title")) &&
-            x.AttributeSet.Any(y => y.Value.Equals("engineer"))
-        ));
+            x.AttributeSet.Any(y => y.Value.Equals("engineer")))));
 
-        //Others
+        // Others
         Assert.IsTrue(result.SearchResult.Any(x =>
             x.DistinguishedName.Equals("CN=Foo Bar,ou=users,dc=wimpi,dc=net") ||
             x.DistinguishedName.Equals("uid=test,ou=users,dc=wimpi,dc=net") ||
@@ -456,34 +443,34 @@ public class UnitTests
         {
             new()
             {
-                Host = "",
-                User = "",
-                Password = "",
+                Host = string.Empty,
+                User = string.Empty,
+                Password = string.Empty,
                 SecureSocketLayer = false,
                 Port = 0,
                 TLS = false,
-                LDAPProtocolVersion = LDAPVersion.V3
+                LDAPProtocolVersion = LDAPVersion.V3,
             },
             new()
             {
-                Host = _host,
-                User = "",
-                Password = "",
+                Host = host,
+                User = string.Empty,
+                Password = string.Empty,
                 SecureSocketLayer = false,
                 Port = 0,
                 TLS = false,
-                LDAPProtocolVersion = LDAPVersion.V3
+                LDAPProtocolVersion = LDAPVersion.V3,
             },
             new()
             {
-                Host = _host,
-                User = _user,
-                Password = "",
+                Host = host,
+                User = user,
+                Password = string.Empty,
                 SecureSocketLayer = false,
                 Port = 0,
                 TLS = false,
-                LDAPProtocolVersion = LDAPVersion.V3
-            }
+                LDAPProtocolVersion = LDAPVersion.V3,
+            },
         };
 
         var errors = new string[] { "Host is missing.", "Username is missing.", "Password is missing." };
@@ -503,18 +490,18 @@ public class UnitTests
     {
         connection = new()
         {
-            Host = _host,
+            Host = host,
             User = "invalidUser",
             Password = "invalisPass",
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
             LDAPProtocolVersion = LDAPVersion.V3,
         };
 
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MsLimit = default,
@@ -536,10 +523,10 @@ public class UnitTests
     public void CreateTestUsers()
     {
         LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
-        foreach (var i in _cns)
+        foreach (var i in cns)
         {
             var title = i.Contains("Qwe Rty") ? "Coffee maker" : "engineer";
             LdapAttributeSet attributeSet = new();
@@ -548,9 +535,9 @@ public class UnitTests
             attributeSet.Add(new LdapAttribute("givenname", i[..2]));
             attributeSet.Add(new LdapAttribute("sn", i[4..]));
             attributeSet.Add(new LdapAttribute("title", title));
-            attributeSet.Add(new LdapAttribute("photo", _photo));
+            attributeSet.Add(new LdapAttribute("photo", photo));
 
-            var entry = $"CN={i},{_path}";
+            var entry = $"CN={i},{path}";
             LdapEntry newEntry = new(entry, attributeSet);
             conn.Add(newEntry);
         }
@@ -563,7 +550,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MaxResults = 2,
@@ -581,7 +568,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MaxResults = 5,
@@ -599,7 +586,7 @@ public class UnitTests
     {
         input = new()
         {
-            SearchBase = _path,
+            SearchBase = path,
             Scope = Scopes.ScopeSub,
             Filter = null,
             MaxResults = 5,

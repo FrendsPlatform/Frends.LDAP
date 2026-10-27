@@ -116,7 +116,7 @@ public static class LDAP
                     null,
                     searchConstraints);
 
-                ProcessSearchResults(queue, searchResults, cancellationToken, encoding, input, ref cookie);
+                ProcessSearchResults(queue, searchResults, encoding, input, ref cookie, cancellationToken);
             }
             while (cookie != null && cookie.Length > 0);
 
@@ -148,12 +148,12 @@ public static class LDAP
 
             if (inputAttribute.ReturnType == ReturnType.ByteArray)
             {
-                if (values.Any())
+                if (values.Count > 0)
                     attributeVal = values.Count > 1 ? values : values[0];
             }
             else if (inputAttribute.ReturnType == ReturnType.Guid)
             {
-                if (values.Any())
+                if (values.Count > 0)
                 {
                     if (values.Count > 1)
                     {
@@ -234,7 +234,7 @@ public static class LDAP
         };
     }
 
-    private static void ProcessSearchResults(LdapSearchQueue queue, List<SearchResult> searchResults, CancellationToken cancellationToken, Encoding encoding, Input input, ref byte[] cookie)
+    private static void ProcessSearchResults(LdapSearchQueue queue, List<SearchResult> searchResults, Encoding encoding, Input input, ref byte[] cookie, CancellationToken cancellationToken)
     {
         LdapMessage message;
         while ((message = queue.GetResponse()) != null)
