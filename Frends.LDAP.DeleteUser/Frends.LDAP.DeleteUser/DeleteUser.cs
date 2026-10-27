@@ -1,13 +1,15 @@
-﻿using Frends.LDAP.DeleteUser.Definitions;
-using System.ComponentModel;
-using Novell.Directory.Ldap;
 using System;
+using System.ComponentModel;
+using System.Threading;
+using Frends.LDAP.DeleteUser.Definitions;
+using Novell.Directory.Ldap;
+
 namespace Frends.LDAP.DeleteUser;
 
 /// <summary>
 /// LDAP task.
 /// </summary>
-public class LDAP
+public static class LDAP
 {
     /// <summary>
     /// Delete a user from Active Directory.
@@ -15,11 +17,15 @@ public class LDAP
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>Object { bool Success, string Error, string CommonName, string Path }</returns>
-    public static Result DeleteUser([PropertyTab] Input input, [PropertyTab] Connection connection)
+    public static Result DeleteUser([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
             throw new Exception("Connection parameters missing.");
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         LdapConnection conn = new();
 
@@ -39,7 +45,11 @@ public class LDAP
         }
         catch (LdapException ex)
         {
-            return new Result(false, ex.Message, input.CommonName, input.Path);
+            if (options.ThrowErrorOnFailure)
+                throw new Exception(string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : options.ErrorMessageOnFailure, ex);
+
+            var message = string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : $"{options.ErrorMessageOnFailure}: {ex.Message}";
+            return new Result(false, message, input.CommonName, input.Path);
         }
         catch (Exception ex)
         {

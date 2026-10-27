@@ -1,10 +1,18 @@
-﻿namespace Frends.LDAP.DeleteUser.Definitions;
+namespace Frends.LDAP.DeleteUser.Definitions;
 
 /// <summary>
 /// Task's result.
 /// </summary>
 public class Result
 {
+    internal Result(bool success, string error, string commonName, string path)
+    {
+        Success = success;
+        Error = error;
+        CommonName = commonName;
+        Path = path;
+    }
+
     /// <summary>
     /// User deleted.
     /// </summary>
@@ -28,12 +36,4 @@ public class Result
     /// </summary>
     /// <example>CN=Users,DC=Example,DC=Com</example>
     public string Path { get; private set; }
-
-    internal Result(bool success, string error, string commonName, string path)
-    {
-        Success = success;
-        Error = error;
-        CommonName = commonName;
-        Path = path;
-    }
 }
