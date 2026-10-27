@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using Frends.LDAP.DeleteUser.Definitions;
+using Frends.LDAP.DeleteUser.Helpers;
 using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.DeleteUser;
@@ -19,18 +20,18 @@ public static class LDAP
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>Object { bool Success, string Error, string CommonName, string Path }</returns>
+    /// <returns>object { bool Success, string CommonName, string Path, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result DeleteUser([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("Connection parameters missing.");
-
-        cancellationToken.ThrowIfCancellationRequested();
-
         LdapConnection conn = new();
 
         try
         {
+            if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
+                throw new ArgumentException("Connection parameters missing.");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
             var entry = $"CN={input.CommonName},{input.Path}";
 
@@ -41,24 +42,22 @@ public static class LDAP
 
             conn.Delete(entry);
 
-            return new Result(true, null, input.CommonName, input.Path);
-        }
-        catch (LdapException ex)
-        {
-            if (options.ThrowErrorOnFailure)
-                throw new Exception(string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : options.ErrorMessageOnFailure, ex);
-
-            var message = string.IsNullOrEmpty(options.ErrorMessageOnFailure) ? ex.Message : $"{options.ErrorMessageOnFailure}: {ex.Message}";
-            return new Result(false, message, input.CommonName, input.Path);
+            return new Result { Success = true, CommonName = input.CommonName, Path = input.Path };
         }
         catch (Exception ex)
         {
-            throw new Exception($"DeleteUser error: {ex}");
+            var result = ex.Handle(options);
+            result.CommonName = input.CommonName;
+            result.Path = input.Path;
+            return result;
         }
         finally
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            if (conn.Connected)
+            {
+                if (connection.TLS) conn.StopTls();
+                conn.Disconnect();
+            }
         }
     }
 }

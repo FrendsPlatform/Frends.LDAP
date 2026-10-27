@@ -42,7 +42,7 @@ public class UnitTests
         };
 
         var result = LDAP.DeleteUser(input, connection, new Options { ThrowErrorOnFailure = false }, CancellationToken.None);
-        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Object"));
+        Assert.IsTrue(result.Success.Equals(false) && result.Error.Message.Contains("No Such Object"));
     }
 
     [TestMethod]
