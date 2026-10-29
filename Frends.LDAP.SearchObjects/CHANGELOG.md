@@ -2,10 +2,11 @@
 
 ## [5.0.0] - 2026-10-27
 ### Changed
-- **[Breaking Change]** Task now targets .NET 8.
-- **[Breaking Change]** Added the `Options` parameter with `ThrowErrorOnFailure` and `ErrorMessageOnFailure`. Task now throws on failure by default.
+- Task now targets .NET 8.
+- Added the `Options` parameter with `ThrowErrorOnFailure` and `ErrorMessageOnFailure`. Task now throws on failure by default.
 - **[Breaking Change]** Removed the `ThrowExceptionOnError` property from `Connection`; use `Options.ThrowErrorOnFailure` instead.
 - **[Breaking Change]** `Result.Error` is now an object with `Message` and `AdditionalInfo` instead of a string.
+- **[Breaking Change]** Task rethrows exception when occured instead of creating a new generic Exception.
 
 ## [4.2.0] - 2026-02-03
 ### Changed
@@ -34,7 +35,7 @@
 [Breaking]
 - Updated to version 3.0.0 with enhanced LDAP search capabilities.
 - Added support for selecting custom attributes, allowing users to receive attribute values as either text, byte array or Guid.
-- Introduced new encoding options—including BOM support and various encoding choices—for improved handling of search results.
+- Introduced new encoding optionsï¿½including BOM support and various encoding choicesï¿½for improved handling of search results.
 - Enabled an option to return only specified attributes, enhancing control over the output.
 - Added functionality to handle photo attributes in LDAP entries.
 - Enhanced flexibility in specifying content encoding for search results.
