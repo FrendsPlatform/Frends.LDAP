@@ -1,8 +1,8 @@
 namespace Frends.LDAP.AddUserToGroups.Tests;
 
-using NUnit.Framework;
 using Frends.LDAP.AddUserToGroups.Definitions;
 using Novell.Directory.Ldap;
+using NUnit.Framework;
 
 [TestFixture]
 public class UnitTests
@@ -11,13 +11,13 @@ public class UnitTests
         LDAP server to docker.
         docker run -d -it --rm -p 10389:10389 dwimberger/ldap-ad-it
     */
-    private readonly string? _host = "127.0.0.1";
-    private readonly int _port = 10389;
-    private readonly string? _user = "uid=admin,ou=system";
-    private readonly string? _pw = "secret";
-    private readonly string _groupDn = "cn=admin,ou=roles,dc=wimpi,dc=net";
-    private readonly string _groupDn2 = "cn=developers,ou=roles,dc=wimpi,dc=net";
-    private readonly string _testUserDn = "CN=Test User,ou=users,dc=wimpi,dc=net";
+    private readonly string? host = "127.0.0.1";
+    private readonly int port = 10389;
+    private readonly string? user = "uid=admin,ou=system";
+    private readonly string? pw = "secret";
+    private readonly string groupDn = "cn=admin,ou=roles,dc=wimpi,dc=net";
+    private readonly string groupDn2 = "cn=developers,ou=roles,dc=wimpi,dc=net";
+    private readonly string testUserDn = "CN=Test User,ou=users,dc=wimpi,dc=net";
 
     private Input? input;
     private Connection? connection;
@@ -27,25 +27,25 @@ public class UnitTests
     {
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        CreateTestUser(_testUserDn);
-        CreateTestGroups("admin", _groupDn);
-        CreateTestGroups("developers", _groupDn2);
+        CreateTestUser(testUserDn);
+        CreateTestGroups("admin", groupDn);
+        CreateTestGroups("developers", groupDn2);
     }
 
     [TearDown]
     public void Teardown()
     {
-        DeleteTestUsers(_testUserDn, new[] { _groupDn, _groupDn2 });
-        DeleteTestGroups(_groupDn);
-        DeleteTestGroups(_groupDn2);
+        DeleteTestUsers(testUserDn, new[] { groupDn, groupDn2 });
+        DeleteTestGroups(groupDn);
+        DeleteTestGroups(groupDn2);
     }
 
     [Test]
@@ -58,7 +58,7 @@ public class UnitTests
             UserExistsAction = UserExistsAction.Throw,
         };
 
-        var ex = Assert.Throws<Exception>(() => LDAP.AddUserToGroups(input, connection, default));
+        var ex = Assert.Throws<Exception>(() => LDAP.AddUserToGroups(input, connection, new Options(), default));
         Assert.IsTrue(ex.Message.Contains("No Such Object"));
     }
 
@@ -67,12 +67,12 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn },
             UserExistsAction = UserExistsAction.Throw,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
         Assert.IsNull(result.Details);
@@ -83,18 +83,18 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn, _groupDn2 },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn, groupDn2 },
             UserExistsAction = UserExistsAction.Throw,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
         Assert.IsNull(result.Details);
 
-        Assert.IsTrue(VerifyUserInGroup(_testUserDn, _groupDn));
-        Assert.IsTrue(VerifyUserInGroup(_testUserDn, _groupDn2));
+        Assert.IsTrue(VerifyUserInGroup(testUserDn, groupDn));
+        Assert.IsTrue(VerifyUserInGroup(testUserDn, groupDn2));
     }
 
     [Test]
@@ -102,15 +102,15 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn },
             UserExistsAction = UserExistsAction.Throw,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
         Assert.IsTrue(result.Success);
 
-        var ex = Assert.Throws<Exception>(() => LDAP.AddUserToGroups(input, connection, default));
+        var ex = Assert.Throws<Exception>(() => LDAP.AddUserToGroups(input, connection, new Options(), default));
         Assert.IsTrue(ex.Message.Contains("User already exists in the group"));
     }
 
@@ -119,17 +119,17 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn },
             UserExistsAction = UserExistsAction.Skip,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
         Assert.IsNull(result.Details);
 
-        result = LDAP.AddUserToGroups(input, connection, default);
+        result = LDAP.AddUserToGroups(input, connection, new Options(), default);
         Assert.IsTrue(result.Success);
         Assert.IsNotNull(result.Details);
         Assert.IsTrue(result.Details.Contains("User already exists"));
@@ -140,20 +140,20 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn },
             UserExistsAction = UserExistsAction.Throw,
         };
-        LDAP.AddUserToGroups(input, connection, default);
+        LDAP.AddUserToGroups(input, connection, new Options(), default);
 
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn, _groupDn2 },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn, groupDn2 },
             UserExistsAction = UserExistsAction.Skip,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
 
         Assert.IsTrue(result.Success);
         Assert.IsNull(result.Error);
@@ -161,8 +161,8 @@ public class UnitTests
         Assert.IsTrue(result.Details.Contains("Added to 1 group(s)"));
         Assert.IsTrue(result.Details.Contains("Skipped 1 group(s)"));
 
-        Assert.IsTrue(VerifyUserInGroup(_testUserDn, _groupDn));
-        Assert.IsTrue(VerifyUserInGroup(_testUserDn, _groupDn2));
+        Assert.IsTrue(VerifyUserInGroup(testUserDn, groupDn));
+        Assert.IsTrue(VerifyUserInGroup(testUserDn, groupDn2));
     }
 
     [Test]
@@ -170,20 +170,20 @@ public class UnitTests
     {
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn, _groupDn2 },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn, groupDn2 },
             UserExistsAction = UserExistsAction.Throw,
         };
-        LDAP.AddUserToGroups(input, connection, default);
+        LDAP.AddUserToGroups(input, connection, new Options(), default);
 
         input = new()
         {
-            UserDistinguishedName = _testUserDn,
-            GroupDistinguishedNames = new[] { _groupDn, _groupDn2 },
+            UserDistinguishedName = testUserDn,
+            GroupDistinguishedNames = new[] { groupDn, groupDn2 },
             UserExistsAction = UserExistsAction.Skip,
         };
 
-        var result = LDAP.AddUserToGroups(input, connection, default);
+        var result = LDAP.AddUserToGroups(input, connection, new Options(), default);
 
         Assert.IsTrue(result.Success);
         Assert.IsNotNull(result.Details);
@@ -193,8 +193,8 @@ public class UnitTests
     private bool VerifyUserInGroup(string userDn, string groupDn)
     {
         using LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         ILdapSearchResults searchResults = conn.Search(
             groupDn,
@@ -221,8 +221,8 @@ public class UnitTests
         {
             SecureSocketLayer = false,
         };
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         try
         {
@@ -249,8 +249,8 @@ public class UnitTests
     private void DeleteTestUsers(string userDn, string[] groupDns)
     {
         using LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         foreach (var groupDn in groupDns)
         {
@@ -294,8 +294,8 @@ public class UnitTests
     private void DeleteTestGroups(string dn)
     {
         using LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         try
         {
@@ -311,8 +311,8 @@ public class UnitTests
     private void CreateTestGroups(string cn, string dn)
     {
         using LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         try
         {
