@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+
 namespace Frends.LDAP.CreateUser.Definitions;
 
 /// <summary>

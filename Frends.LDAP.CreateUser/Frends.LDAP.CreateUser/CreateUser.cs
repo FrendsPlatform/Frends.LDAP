@@ -1,15 +1,17 @@
-﻿using Frends.LDAP.CreateUser.Definitions;
+﻿using System;
 using System.ComponentModel;
-using Novell.Directory.Ldap;
-using System;
 using System.Text;
+using System.Threading;
+using Frends.LDAP.CreateUser.Definitions;
+using Frends.LDAP.CreateUser.Helpers;
+using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.CreateUser;
 
 /// <summary>
 /// LDAP task.
 /// </summary>
-public class LDAP
+public static class LDAP
 {
     /// <summary>
     /// Create a user to Active Directory.
@@ -17,18 +19,22 @@ public class LDAP
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
-    /// <returns>Object { bool Success, string Error, string CommonName, bool PasswordSet, string Path }</returns>
-    public static Result CreateUser([PropertyTab] Input input, [PropertyTab] Connection connection)
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+    /// <returns>object { bool Success, string CommonName, bool PasswordSet, string Path, object Error { string Message, Exception AdditionalInfo } }</returns>
+    public static Result CreateUser([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("Connection parameters missing.");
-
-        if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
-            throw new Exception("Active Directory password changes require SSL or TLS or both.");
         LdapConnection conn = new();
 
         try
         {
+            if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
+                throw new Exception("Connection parameters missing.");
+
+            if ((connection.SecureSocketLayer == false && connection.TLS == false) && input.SetPasswordInUnicode)
+                throw new Exception("Active Directory password changes require SSL or TLS or both.");
+
+            cancellationToken.ThrowIfCancellationRequested();
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
             var entry = $"CN={input.CommonName},{input.Path}";
 
@@ -68,27 +74,26 @@ public class LDAP
 
             LdapEntry newEntry = new(entry, attributeSet);
             conn.Add(newEntry);
-            return new Result(true, null, input.CommonName, input.SetPassword, input.Path);
-        }
-        catch (LdapException ex)
-        {
-            return new Result(false, ex.Message, input.CommonName, false, input.Path);
+            return new Result
+            {
+                Success = true,
+                CommonName = input.CommonName,
+                PasswordSet = input.SetPassword,
+                Path = input.Path,
+                Error = null,
+            };
         }
         catch (Exception ex)
         {
-            throw new Exception($"CreateUser error: {ex}");
+            return ex.Handle(options);
         }
         finally
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            if (conn.Connected)
+            {
+                if (connection.TLS) conn.StopTls();
+                conn.Disconnect();
+            }
         }
     }
 }
-
-
-
-
-
-
-
