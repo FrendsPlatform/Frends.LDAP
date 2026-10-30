@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+
 namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
 
 /// <summary>

@@ -1,5 +1,3 @@
-﻿using System.ComponentModel;
-
 namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
 
 /// <summary>
@@ -18,11 +16,4 @@ public class Input
     /// </summary>
     /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
     public string GroupDistinguishedName { get; set; }
-
-    /// <summary>
-    /// How to handle LDAP errors.
-    /// </summary>
-    /// <example>HandleLDAPError.Throw</example>
-    [DefaultValue(HandleLDAPError.Throw)]
-    public HandleLDAPError HandleLDAPError { get; set; }
 }

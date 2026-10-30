@@ -1,4 +1,4 @@
-﻿namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
+namespace Frends.LDAP.RemoveUserFromGroups.Definitions;
 
 /// <summary>
 /// Task's result.
@@ -9,31 +9,23 @@ public class Result
     /// User has been removed from group(s).
     /// </summary>
     /// <example>true</example>
-    public bool Success { get; private set; }
-
-    /// <summary>
-    /// LDAP Error message.
-    /// </summary>
-    /// <example>No Such Attribute</example>
-    public string Error { get; private set; }
+    public bool Success { get; set; }
 
     /// <summary>
     /// User DN.
     /// </summary>
     /// <example>CN=Tes Tuser,ou=users,dc=wimpi,dc=net</example>
-    public string UserDistinguishedName { get; private set; }
+    public string UserDistinguishedName { get; set; }
 
     /// <summary>
     /// Group DN.
     /// </summary>
     /// <example>cn=admin,ou=roles,dc=wimpi,dc=net</example>
-    public string GroupDistinguishedName { get; private set; }
+    public string GroupDistinguishedName { get; set; }
 
-    internal Result(bool success, string error, string userDistinguishedName, string groupDistinguishedName)
-    {
-        Success = success;
-        Error = error;
-        UserDistinguishedName = userDistinguishedName;
-        GroupDistinguishedName = groupDistinguishedName;
-    }
+    /// <summary>
+    /// Error that occurred during task execution.
+    /// </summary>
+    /// <example>object { string Message, Exception AdditionalInfo }</example>
+    public Error Error { get; set; }
 }
