@@ -1,19 +1,21 @@
-﻿using Frends.LDAP.UpdateUser.Definitions;
-using System.ComponentModel;
-using Novell.Directory.Ldap;
 using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
+using Frends.LDAP.UpdateUser.Definitions;
+using Frends.LDAP.UpdateUser.Helpers;
+using Novell.Directory.Ldap;
 
 namespace Frends.LDAP.UpdateUser;
 
 /// <summary>
 /// LDAP task.
 /// </summary>
-public class LDAP
+public static class LDAP
 {
-    /// For mem cleanup.
+    // For mem cleanup.
     static LDAP()
     {
         var currentAssembly = Assembly.GetExecutingAssembly();
@@ -28,24 +30,38 @@ public class LDAP
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
-    /// <returns>Object { bool Success, string Error, string CommonName, string Path }</returns>
-    public static Result UpdateUser([PropertyTab] Input input, [PropertyTab] Connection connection)
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+    /// <returns>object { bool Success, object Error { string Message, Exception AdditionalInfo }, string CommonName, string Path }</returns>
+    public static Result UpdateUser(
+        [PropertyTab] Input input,
+        [PropertyTab] Connection connection,
+        [PropertyTab] Options options,
+        CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
-            throw new Exception("UpdateUser error: Connection parameters missing.");
-        if (input.Attributes.Length == 0)
-            throw new Exception("UpdateUser error: Attributes missing.");
-
         LdapConnection conn = new();
+        var tlsStarted = false;
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(connection.Host) || string.IsNullOrWhiteSpace(connection.User) || string.IsNullOrWhiteSpace(connection.Password))
+                throw new Exception("UpdateUser error: Connection parameters missing.");
+            if (input.Attributes.Length == 0)
+                throw new Exception("UpdateUser error: Attributes missing.");
+
             var defaultPort = connection.SecureSocketLayer ? 636 : 389;
             var entry = input.CreateDN ? $"CN={input.CommonName},{input.Path}" : input.DistinguishedName;
 
             conn.SecureSocketLayer = connection.SecureSocketLayer;
             conn.Connect(connection.Host, connection.Port == 0 ? defaultPort : connection.Port);
-            if (connection.TLS) conn.StartTls();
+            if (connection.TLS)
+            {
+                conn.StartTls();
+                tlsStarted = true;
+            }
+
             conn.Bind(connection.User, connection.Password);
 
             var modList = new ArrayList();
@@ -72,20 +88,25 @@ public class LDAP
             mods = (LdapModification[])modList.ToArray(typeof(LdapModification));
             conn.Modify(entry, mods);
 
-            return new Result(true, null, input.CommonName, input.Path);
-        }
-        catch (LdapException ex)
-        {
-            return new Result(false, ex.Message, input.CommonName, input.Path);
+            return new Result
+            {
+                Success = true,
+                Error = null,
+                CommonName = input.CommonName,
+                Path = input.Path,
+            };
         }
         catch (Exception ex)
         {
-            throw new Exception($"UpdateUser error: {ex}");
+            var result = ex.Handle(options);
+            result.CommonName = input.CommonName;
+            result.Path = input.Path;
+            return result;
         }
         finally
         {
-            if (connection.TLS) conn.StopTls();
-            conn.Disconnect();
+            if (tlsStarted) conn.StopTls();
+            if (conn.Connected) conn.Disconnect();
         }
     }
 

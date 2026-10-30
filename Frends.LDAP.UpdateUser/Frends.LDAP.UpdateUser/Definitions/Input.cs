@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -46,26 +46,8 @@ public class Input
     public string Path { get; set; }
 
     /// <summary>
-    /// Attributes to be updated. 
+    /// Attributes to be updated.
     /// </summary>
     /// <example>Telephone, +358123456789</example>
     public Attributes[] Attributes { get; set; } = Array.Empty<Attributes>();
-}
-
-/// <summary>
-/// Attribute values.
-/// </summary>
-public class Attributes
-{
-    /// <summary>
-    /// Key.
-    /// </summary>
-    /// <example>Telephone</example>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Value.
-    /// </summary>
-    /// <example>+358123456789</example>
-    public string Value { get; set; }
 }

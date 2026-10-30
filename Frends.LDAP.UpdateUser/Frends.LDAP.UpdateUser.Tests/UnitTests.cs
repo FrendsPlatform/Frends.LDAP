@@ -1,25 +1,26 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Frends.LDAP.UpdateUser.Definitions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Novell.Directory.Ldap;
+
 namespace Frends.LDAP.UpdateUser.Tests;
 
 [TestClass]
 public class UnitTests
 {
-
     /*
         Create a simple LDAP server to docker
         docker run -d -it --rm -p 10389:10389 dwimberger/ldap-ad-it
     */
 
-    private readonly string? _host = "127.0.0.1";
-    private readonly int _port = 10389;
-    private readonly string? _user = "uid=admin,ou=system";
-    private readonly string? _pw = "secret";
-    private readonly string _path = "ou=users,dc=wimpi,dc=net";
+    private readonly string? host = "127.0.0.1";
+    private readonly int port = 10389;
+    private readonly string? user = "uid=admin,ou=system";
+    private readonly string? pw = "secret";
+    private readonly string path = "ou=users,dc=wimpi,dc=net";
+    private readonly Options options = new() { ThrowErrorOnFailure = false };
 
-    Input? input;
-    Connection? connection;
+    private Input? input;
+    private Connection? connection;
 
     [TestCleanup]
     public void CleanUp()
@@ -35,23 +36,23 @@ public class UnitTests
         input = new()
         {
             Path = "CN=qw,DC=er,DC=ty",
-            CommonName = "FAil" + new Guid(),
+            CommonName = "FAil" + Guid.Empty,
             ModificationMethod = ModificationMethod.Add,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } }
+            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
-        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Object"));
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
+        Assert.IsTrue(result.Success.Equals(false) && result.Error.Message.Contains("No Such Object"));
     }
 
     [TestMethod]
@@ -64,20 +65,19 @@ public class UnitTests
             DistinguishedName = "CN=Tes TUser,ou=users,dc=wimpi,dc=net",
             ModificationMethod = ModificationMethod.Add,
             CreateDN = false,
-            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } }
-
+            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
@@ -92,20 +92,19 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Add,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } }
-
+            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
@@ -120,19 +119,19 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Add,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } }
+            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
@@ -147,21 +146,20 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Delete,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "coffee maker" } }
-
+            Attributes = new[] { new Attributes { Key = "title", Value = "coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
-        Assert.IsTrue(result.Success.Equals(false) && result.Error.Contains("No Such Attribute"));
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
+        Assert.IsTrue(result.Success.Equals(false) && result.Error.Message.Contains("No Such Attribute"));
     }
 
     [TestMethod]
@@ -175,20 +173,19 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Delete,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "coffee maker" } }
-
+            Attributes = new[] { new Attributes { Key = "title", Value = "coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
@@ -203,19 +200,19 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Add,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "" } }
+            Attributes = new[] { new Attributes { Key = "title", Value = string.Empty } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
@@ -230,23 +227,21 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Replace,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } }
-
+            Attributes = new[] { new Attributes { Key = "title", Value = "senior coffee maker" } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
-
 
     [TestMethod]
     public void UpdateUser_Replace_WithoutValue_Test()
@@ -259,40 +254,40 @@ public class UnitTests
             CommonName = "Tes TUser",
             ModificationMethod = ModificationMethod.Replace,
             CreateDN = true,
-            Attributes = new[] { new Attributes { Key = "title", Value = "" } }
+            Attributes = new[] { new Attributes { Key = "title", Value = string.Empty } },
         };
         connection = new()
         {
-            Host = _host,
-            User = _user,
-            Password = _pw,
+            Host = host,
+            User = user,
+            Password = pw,
             SecureSocketLayer = false,
-            Port = _port,
+            Port = port,
             TLS = false,
         };
 
-        var result = LDAP.UpdateUser(input, connection);
+        var result = LDAP.UpdateUser(input, connection, options, CancellationToken.None);
         Assert.IsTrue(result.Success.Equals(true));
     }
 
     public void CreateTestUsers(bool setTitle)
     {
         LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
 
         var attributeSet = new LdapAttributeSet
         {
             new LdapAttribute("objectclass", "inetOrgPerson"),
             new LdapAttribute("cn", "Tes Tuser"),
             new LdapAttribute("givenname", "Tes"),
-            new LdapAttribute("sn", "Tuser")
+            new LdapAttribute("sn", "Tuser"),
         };
 
         if (setTitle)
             attributeSet.Add(new LdapAttribute("title", "coffee maker"));
 
-        var entry = $"CN=Tes Tuser,{_path}";
+        var entry = $"CN=Tes Tuser,{path}";
         LdapEntry newEntry = new(entry, attributeSet);
         conn.Add(newEntry);
         conn.Disconnect();
@@ -301,9 +296,9 @@ public class UnitTests
     public void DeleteUser()
     {
         LdapConnection conn = new();
-        conn.Connect(_host, _port);
-        conn.Bind(_user, _pw);
-        conn.Delete($"CN=Tes Tuser,{_path}");
+        conn.Connect(host, port);
+        conn.Bind(user, pw);
+        conn.Delete($"CN=Tes Tuser,{path}");
         conn.Disconnect();
     }
 }
